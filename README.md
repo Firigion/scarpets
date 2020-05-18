@@ -20,6 +20,19 @@ You can watch a video with some of the features [here](https://www.youtube.com/w
 
 # Replace
 To load, paste the code in `replace.mccmd` into a command block and power it. Then, all functions will be available through `/script run <function_name>`. This app adds two commands to replace blocks with some extra functionality: it will keep the block properties of the pasted block. This means, if you have a to spruce stair facing north, it will be replaced by a top sandstone stair facing north, and if you have a bich log in the z axis, it will be replaced by a striped sruce log in the z axis. 
+
 But I hear you ask, "how can I chose what blocks to replace with what blocks?". Easy: just hold the block to replace in the offhand and the block to replace it with in the main hand. Select the area you want to affect and run `/script run replace_volume()`. To select the area, you define a cuboid by its two corners with `/script run set_pos(<1|2>)`, just like the shapes app. I stole the area selection from there. I also upgraded it a bit by adding functionality to the golden sowrd: if you left click a block or in the air, you will set one position and if you attack a block, you will set the other. Sadly, you can't attack air. This only works when holding a golden sword. If you are in the nether, the once the two corners are defined, a cuboid will actualy render. Why only in the nether, you ask? Excelent question. If you wanna turn rendering of the markers and cuboid on/off, use `/script run toggle_show_pos()`.
+
 After recording the [video](https://www.youtube.com/watch?v=_iWv2vvnj8o) I added another command, so it's not showcased there: you cna now filter by properties: for example, if you only wanna replace logs that are in the x axis, you hold the corresponding logs in main and offhand and run `/script run replace_volume_filt('axis', 'x')`. Remember to put properties and values in single quotes, even stuf like `'true'` and `'5'`.
 
+### tl:dr
+Select positions with golden sower left and right click, or by using `/script run set_pos(<index>)` with `index` being 1 or 2. to replace blocks, run `/script run replace_volume()`, which will replace whatever block you ahve in the offhand with whatever block you have in the main hand, keeping the block properties of the replaced block, as long as they are somewhat compatible. You can filter for certain properties by using  `/script run replace_volume_filt(property, value)`.
+
+# Nether portal POI display
+Super simple app that you load using `/script load poi_show_md gloabl`. For once, the app is fully compatible with multiplayer (and with mutiple players using it at the same time, in particular, which is the important part). To use it, jsut hold an eye of ender in your main or offhand. A marker will appear in every nether portal POI around you in a 40 block radious by default. You can change that value using `/poi_show_md set_range <range>`. Please be sensible about the settings, because I didn't add any checks when setting new values.
+
+The markers will update in real time, which means the game is constantly checking for new POIs poping up or old POIs disappearing. By default, the check is done every 5 game ticks. If this is too often for what your system can handle, use `/poi_show_md set_refresh_rate <value>` to something higher than 5. Again, be sensible with values. If you uso some non integer value, it will never update. I think. haven't tried.
+
+The app also adds two simple commands to place and remove nether portal POIs from the world, without affecting the nether portal block: just look at the block the POI is in and run `/poi_show_md portalles_poi` to set one and `/poi_show_md remove_poi` to remove it. Sidenote: `remove_poi` will remove _any_ POI, not only nether portals. I forgot to check for the type, upsi.
+
+For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully up to date with the features.
