@@ -8,7 +8,7 @@ global_markers = m( l('nether', m()), l('overworld', m()) );
 __put_marker(pos, dim) ->(
 	// Create marker at position and give it useful properties and a tag
 	e = create_marker('', pos + l(0.5, 0.5, 0.5), 'purple_stained_glass');
-	run(str('data merge entity %s {Glowing:1b, Fire:32767s, Marker:1b}', query(e, 'uuid')));
+	run(str('data merge entity %s {Glowing:1b, Fire:32767s}', query(e, 'uuid')));
 	modify(e, 'tag', 'nether_poi_marker');
 	// Add the marker to the global marker list
 	global_markers:dim:pos = e;
@@ -72,6 +72,6 @@ __on_tick_nether() -> (
 set_refresh_rate(val) -> global_refresh_rate = val;
 set_range(val) -> global_range = val;
 // Set a nether portal poi without the block
-portalles_poi() -> set_poi(pos(query(player(), 'trace')), 'nether_portal');
+portalles_poi() -> set_poi(pos(query(player(), 'trace', 'blocks')), 'nether_portal');
 // Remove whatever poi you are looking at
-remove_poi() -> set_poi(pos(query(player(), 'trace')), null);
+remove_poi() -> set_poi(pos(query(player(), 'trace', 'blocks')), null);
