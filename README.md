@@ -37,7 +37,7 @@ The app also adds two simple commands to place and remove nether portal POIs fro
 
 For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully up to date with the features.
 
-#Spirals
+# Spirals
 A nice app to make spirals with a few options. To use it, put `spirals.sc` in your scrpits folder and load it with `/script load spirals global`. After that, all functions will be available with the command `/spirals`. If you can't access the scripts folder, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
 
 Available commands:
