@@ -77,7 +77,7 @@ antispiral_template(r, h, s) -> (
 );
 
 
-multi_spiral_template(r, h, s, m, material) -> (
+multi_spiral_template(r, h, s, m) -> (
 	num = 2 * pi * r ;
 	t = l(range( (num+1) * s/h ) )/num;
 	pos = pos(player());
