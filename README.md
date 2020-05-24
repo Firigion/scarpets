@@ -43,8 +43,8 @@ A nice app to make spirals with a few options. To use it, put `spirals.sc` in yo
 Available commands:
 * `spiral`: takes radius, separation between cycles of the spiral, total height and material. It will produce a spiral centered around the player. For example, to make a stone spiral with radius 10 and step 5 that makes 10 total cycles to reacha  height of 50: `/spirals spiral 10 5 50 'stone`. If you loaded with the command block, you'd do `/script run spiral(10, 5, 50, 'stone')`.
 * `antispiral`: the same as spiral, but it turns the other way.
-* `multi_spiral`: same as spiral, but takes one extra argument (before material) to deside how many spirals to draw.
+* `multi_spiral`: same as spiral, but takes one extra argument (before material) to decide how many spirals to draw.
 
-This three commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, graba gold sword and use left and right click to define the area. Read about the replace app to see how to use it.
+This three commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, graba gold sword and use left and right click to define the area. Read about the replace app to see how to use it. of course, these commands dont take a `material` parameter.
 
 Made a [video](https://youtu.be/WL9Pl3eaFaU) for all these functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E).
