@@ -1,4 +1,4 @@
-import('math','distance');//Doesn't actually work until gnembon accepts https://github.com/gnembon/fabric-carpet/pull/289, till then just get fainter lines cos below resolves to null fro unknown func
+import('math','euclidean');
 
 __config() -> m( l('stay_loaded', 'true'),l('scope', 'global'));
 __on_player_uses_item(player, item_tuple, hand)->(
@@ -10,8 +10,8 @@ __on_player_uses_item(player, item_tuple, hand)->(
             pos=mem:'"minecraft:job_site"':'value':'pos'||mem:'"minecraft:job_site"':'pos'||null;
             if(!pos,return());
             l(x,y,z)=nbt(pos):'[]';
-            particle_line('happy_villager',pos(entity),pos(player),if(distance(pos(entity),pos(player))<2,0.1,1));
-            particle_line('happy_villager',pos(entity),l(x+0.5,y+0.5,z+0.5),if(distance(pos(entity),l(x+0.5,y+0.5,z+0.5))<2,0.1,1));
+            particle_line('happy_villager',pos(entity),pos(player),if(euclidean(pos(entity),pos(player))<2,0.1,1));
+            particle_line('happy_villager',pos(entity),l(x+0.5,y+0.5,z+0.5),if(euclidean(pos(entity),l(x+0.5,y+0.5,z+0.5))<2,0.1,1));
         ),
     )
 )
