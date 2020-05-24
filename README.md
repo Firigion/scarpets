@@ -36,3 +36,15 @@ The markers will update in real time, which means the game is constantly checkin
 The app also adds two simple commands to place and remove nether portal POIs from the world, without affecting the nether portal block: just look at the block the POI is in and run `/poi_show_md portalles_poi` to set one and `/poi_show_md remove_poi` to remove it. Sidenote: `remove_poi` will remove _any_ POI, not only nether portals. I forgot to check for the type, upsi.
 
 For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully up to date with the features.
+
+#Spirals
+A nice app to make spirals with a few options. To use it, put `spirals.sc` in your scrpits folder and load it with `/script load spirals global`. After that, all functions will be available with the command `/spirals`. If you can't access the scripts folder, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
+
+Available commands:
+* `spiral`: takes radius, separation between cycles of the spiral, total height and material. It will produce a spiral centered around the player. For example, to make a stone spiral with radius 10 and step 5 that makes 10 total cycles to reacha  height of 50: `/spirals spiral 10 5 50 'stone`. If you loaded with the command block, you'd do `/script run spiral(10, 5, 50, 'stone')`.
+* `antispiral`: the same as spiral, but it turns the other way.
+* `multi_spiral`: same as spiral, but takes one extra argument (before material) to deside how many spirals to draw.
+
+This three commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, graba gold sword and use left and right click to define the area. Read about the replace app to see how to use it.
+
+Made a [video](https://youtu.be/WL9Pl3eaFaU) for all these functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E).
