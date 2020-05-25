@@ -7,42 +7,42 @@ global_armor_stands = l(null, null);
 global_show_pos = true;
 
 // make a spiral paremetricaly
-spiral(r, h, s, material) -> (
-	num = 2 * pi * r ; // ammount of blocks per revolution
-	t = l(range( (num+1) * s/h ) )/num; // the aprameter running the spiral generation
+spiral(radius, pitch, height, material) -> (
+	num = 2 * pi * radius ; // ammount of blocks per revolution
+	t = l(range( (num+1) * height/pitch ) )/num; // the aprameter running the spiral generation
 	pos = pos(player()); //center position
-	x(t, outer(r)) -> r * cos(360 * t); //define circles
-	z(t, outer(r)) -> r * sin(360 * t); //define circles
+	x(t, outer(radius)) -> radius * cos(360 * t); //define circles
+	z(t, outer(radius)) -> radius * sin(360 * t); //define circles
 	for(t,
-		b = pos + l(x(_), h *_ , z(_)); //figure out positions where spiral should be
+		b = pos + l(x(_), pitch *_ , z(_)); //figure out positions where spiral should be
 		set(b, material);
 	);
 );
 
 // exactly the same, but spiral runs the other way
-antispiral(r, h, s, material) -> (
-	num = 2 * pi * r ;
-	t = l(range( (num+1) * s/h ) )/num;
+antispiral(radius, pitch, height, material) -> (
+	num = 2 * pi * radius ;
+	t = l(range( (num+1) * height/pitch ) )/num;
 	pos = pos(player());
-	x(t, outer(r)) -> r * cos(-360 * t); //the minus makes it run the other way
-	z(t, outer(r)) -> r * sin(-360 * t); //the minus makes it run the other way
+	x(t, outer(radius)) -> radius * cos(-360 * t); //the minus makes it run the other way
+	z(t, outer(radius)) -> radius * sin(-360 * t); //the minus makes it run the other way
 	for(t,
-		b = pos + l(x(_), h *_ , z(_));
+		b = pos + l(x(_), pitch *_ , z(_));
 		set(b, material);
 	);
 );
 
-// again, the same, but it will repeat m times, symmetricaly offset.
-multi_spiral(r, h, s, m, material) -> (
-	num = 2 * pi * r ;
-	t = l(range( (num+1) * s/h ) )/num;
+// again, the same, but it will repeat ammount times, symmetricaly offset.
+multi_spiral(radius, pitch, height, ammount, material) -> (
+	num = 2 * pi * radius ;
+	t = l(range( (num+1) * height/pitch ) )/num;
 	pos = pos(player());
-	x(t, i, outer(r), outer(m)) -> r * cos(360 * (t + i/m)); // i/m is the offset in degrees
-	z(t, i, outer(r), outer(m)) -> r * sin(360 * (t + i/m)); // i/m is the offset in degrees
-	for(range(m), //repeat for however many spirals are needed
+	x(t, i, outer(radius), outer(ammount)) -> radius * cos(360 * (t + i/ammount)); // i/ammount is the offset in degrees
+	z(t, i, outer(radius), outer(ammount)) -> radius * sin(360 * (t + i/ammount)); // i/ammount is the offset in degrees
+	for(range(ammount), //repeat for however many spirals are needed
 		i = _;
 		for(t,
-			b = pos + l(x(_, i), h *_ , z(_, i));
+			b = pos + l(x(_, i), pitch *_ , z(_, i));
 			set(b, material);
 		);
 	);
@@ -50,45 +50,45 @@ multi_spiral(r, h, s, m, material) -> (
 
 
 // spirals, again, but instead of using material, uses template defined by selection
-spiral_template(r, h, s) -> (
-	num = 2 * pi * r ;
-	t = l(range( (num+1) * s/h ) )/num;
+spiral_template(radius, pitch, height) -> (
+	num = 2 * pi * radius ;
+	t = l(range( (num+1) * height/pitch ) )/num;
 	pos = pos(player());
-	x(t, outer(r)) -> r * cos(360 * t);
-	z(t, outer(r)) -> r * sin(360 * t);
+	x(t, outer(radius)) -> radius * cos(360 * t);
+	z(t, outer(radius)) -> radius * sin(360 * t);
 	offset = map(global_positions:0 - global_positions:1, abs(_)); //offsets the selection so that it clones it in the center of the block
 	for(t,
-		b = pos + l(x(_), h *_ , z(_));
+		b = pos + l(x(_), pitch *_ , z(_));
 		__clone_template(b - offset); //clones template
 	);
 );
 
 //same, but going the other way
-antispiral_template(r, h, s) -> (
-	num = 2 * pi * r ;
-	t = l(range( (num+1) * s/h ) )/num;
+antispiral_template(radius, pitch, height) -> (
+	num = 2 * pi * radius ;
+	t = l(range( (num+1) * height/pitch ) )/num;
 	pos = pos(player());
-	x(t, outer(r)) -> r * cos(-360 * t); //the minus makes it run the other way
-	z(t, outer(r)) -> r * sin(-360 * t); //the minus makes it run the other way
+	x(t, outer(radius)) -> radius * cos(-360 * t); //the minus makes it run the other way
+	z(t, outer(radius)) -> radius * sin(-360 * t); //the minus makes it run the other way
 	offset = map(global_positions:0 - global_positions:1, abs(_));
 	for(t,
-		b = pos + l(x(_), h *_ , z(_));
+		b = pos + l(x(_), pitch *_ , z(_));
 		__clone_template(b - offset);
 	);
 );
 
 // same, but doing many spirals
-multi_spiral_template(r, h, s, m, material) -> (
-	num = 2 * pi * r ;
-	t = l(range( (num+1) * s/h ) )/num;
+multi_spiral_template(radius, pitch, height, ammount) -> (
+	num = 2 * pi * radius ;
+	t = l(range( (num+1) * height/pitch ) )/num;
 	pos = pos(player());
-	x(t, i, outer(r), outer(m)) -> r * cos(360 * (t + i/m)); // i/m is the offset in degrees 
-	z(t, i, outer(r), outer(m)) -> r * sin(360 * (t + i/m)); // i/m is the offset in degrees
+	x(t, i, outer(radius), outer(ammount)) -> radius * cos(360 * (t + i/ammount)); // i/ammount is the offset in degrees 
+	z(t, i, outer(radius), outer(ammount)) -> radius * sin(360 * (t + i/ammount)); // i/ammount is the offset in degrees
 	offset = map(global_positions:0 - global_positions:1, abs(_));
-	for(range(m), //repeat for however many spirals are needed
+	for(range(ammount), //repeat for however many spirals are needed
 		i = _;
 		for(t,
-			b = pos + l(x(_, i), h *_ , z(_, i));
+			b = pos + l(x(_, i), pitch *_ , z(_, i));
 			__clone_template(b - offset);
 		);
 	);
