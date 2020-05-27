@@ -45,6 +45,8 @@ Available commands:
 * `antispiral`: the same as spiral, but it turns the other way.
 * `multi_spiral`: same as spiral, but takes one extra argument (before material) to decide how many spirals to draw.
 
-This three commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, graba gold sword and use left and right click to define the area. Read about the replace app to see how to use it. of course, these commands dont take a `material` parameter.
+This three commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, graba golden sword and use left and right click to define the area. Read about the replace app to see how to use it. Of course, these commands dont take a `material` parameter.
 
-Made a [video](https://youtu.be/WL9Pl3eaFaU) for all these functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E).
+If you don't want to stand the place you want to be the center of the spiral, you can also define a center with the third position. To set it, shift right click with your sword where you want it to be (if you aren't looking at a block, it will be set at your feet).
+
+Made a [video](https://youtu.be/WL9Pl3eaFaU) for all these functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E). Also made a third [video](https://youtu.be/o8xU7nN55jI) showing the shit + right click thing.
