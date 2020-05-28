@@ -1,12 +1,26 @@
 /script run 
 
-global_positions = l(null, null, null);
-global_all_set = false;
-global_armor_stands = l(null, null, null);
-global_show_pos = true;
+__command() -> null;
 
 
-__rotated90(list_to_rotate) -> (
+global_settings = m(
+						l( 'show_pos' , true ),
+						l( 'paste_with_air' , false ),
+						l( 'axis' , 'y' ),
+						l( 'replace_block' , false ),
+						l( 'rotate' , false ), 
+						l( 'slope_mode', false )
+					);
+global_block_alias = m(
+						l( 'water_bucket', 'water' ),
+						l( 'lava_bucket', 'lava'),
+						l( 'feather', 'air'),
+						l( 'ender_eye', 'end_portal'),
+						l( 'flint_and_steel', 'nether_portal')
+					);
+
+
+__rotated90(list_to_rotate) -> ( 
 	map(list_to_rotate, l(_:1, -_:0))
 );
 
@@ -26,6 +40,7 @@ __make_circle(radius) -> (
 	extend(half,__rotated90(__rotated90(half))); 
 );
 
+
 _circle(radius, material) -> (
 	circ = __make_circle(radius);
 	c = pos(player());
@@ -42,116 +57,223 @@ __get_center() -> (
 	)
 );
 
-__draw_spiral(circle, center, pitch, height, material) -> (
+toggle_paste_with_air() -> (
+	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
+	if(global_settings:'paste_with_air',
+		print('Template will now be pasted with air'),
+		print('Template will now be pasted without air')
+	);
+);
+
+set_axis(axis) -> (
+	if( ( l('x','y','z')~axis ) == null, 
+		return('Axis must be one of x, y, z')
+	);
+	global_settings:'axis' = axis;
+	if( axis == 'x',
+		__get_step(circle, perimeter, advance_step, i) ->(
+			circle_pos = circle:(i%perimeter);
+			step = l(i * advance_step, circle_pos:0, circle_pos:1) ;
+		),
+		axis == 'y',
+		__get_step(circle, perimeter, advance_step, i) ->( 
+			circle_pos = circle:(i%perimeter);
+			step = l(circle_pos:0, i * advance_step, circle_pos:1)
+		),
+		axis == 'z',
+		__get_step(circle, perimeter, advance_step, i) ->(
+			circle_pos = circle:(i%perimeter);
+			step = l(circle_pos:0, circle_pos:1, i * advance_step) ;
+		),
+	);
+);
+
+toggle_replace_block() -> (
+	global_settings:'replace_block' = !global_settings:'replace_block';
+	if(global_settings:'replace_block',
+		
+		print('Spiral will now only replce block in your offhand.\n' +
+		'Hold bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.');
+		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, set(pos, material) ),
+		
+		print('Spiral will paste completly, replacing whatever is there.');
+		__set_block(pos, material, replace_block) -> set(pos , material)
+	);
+);
+
+toggle_slope_mode() -> (
+	global_settings:'slope_mode' = !global_settings:'slope_mode';
+	if(global_settings:'slope_mode',
+		print('Second argument of spiral commands is now slope (in blocks)'),
+		print('Second argument of spiral commands is now pitch(separation between revolutions)')
+	);
+);
+
+settings() -> print(global_settings); 
+
+__get_replace_block() -> (
+	block = query(player(), 'holds', 'offhand'):0;
+	alias = global_block_alias:block;
+	if(alias==null, block, alias)
+);
+
+__get_step(circle, perimeter, advance_step, i) ->( 
+	circle_pos = circle:(i%perimeter);
+	step = l(circle_pos:0, i * advance_step, circle_pos:1) ;
+);
+
+__set_block(pos, material, replace_block) -> ( 
+	set(pos , material) 
+);
+
+
+
+
+__draw_spiral(circle, center, pitch, size, material) -> (
 	l(cx, cy, cz) = center; 
 	perimeter = length(circle); 
 	
-	loop(floor(height/pitch), 
-		turn = _; 
-		for(circle, 
-			this_height =  _i * pitch/perimeter + turn * pitch;
-			set(cx + _:0, cy + this_height , cz + _:1 , material) 
-		)
-	);
-	for(slice(circle, 0, floor( (height/pitch)%1 * perimeter) ),
-		this_height =  _i * pitch/perimeter + floor(height/pitch) * pitch;
-		set(cx + _:0, cy + this_height , cz + _:1 , material) 
-	);
-);
-
-spiral(radius, pitch, height, material) -> (
-	center = __get_center();
-	circle = __make_circle(radius);
-	__draw_spiral(circle, center, pitch, height, material);
-);
-
-antispiral(radius, pitch, height, material) -> (
-	center = __get_center();
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_);
-	__draw_spiral(circle, center, pitch, height, material);
-
-);
-
-multispiral(radius, pitch, height, ammount, material) -> (
-	center = __get_center();
-	circle = __make_circle(radius);
-	perimeter = length(circle);
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount);
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral(this_circ, center, pitch, height, material);
-	);
-);
-
-
-__make_template() -> ( 
-	global_template = l();
-	origin = map(range(3), min(global_positions:0:_, global_positions:1:_));
-	volume(
-		global_positions:0:0, global_positions:0:1, global_positions:0:2,
-		global_positions:1:0, global_positions:1:1, global_positions:1:2,
-		if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) )
-		);
-);
-
-__clone_template(pos) -> (
-	for(global_template, set(pos + _:0, _:1) );
-);
-
-__draw_spiral_from_template(circle, center, pitch, height) -> (
-	perimeter = length(circle);
-	__make_template();
+	replace_block = __get_replace_block();
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
 	
-	loop(floor(height/pitch),
-		turn = _;
-		for(circle, 
-			this_height =  _i * pitch/perimeter + turn * pitch;
-			__clone_template(center + l(_:0, this_height ,  _:1)) 
-		)
-	);
-	for(slice(circle, 0, floor( (height/pitch)%1 * perimeter) ),
-		this_height =  _i * pitch/perimeter + floor(height/pitch) * pitch;
-		__clone_template(center + l(_:0, this_height ,  _:1)) 
+	loop(floor( size / advance_step), 
+		this_step =  __get_step(circle, perimeter, advance_step, _);
+		__set_block(center + this_step , material, replace_block);
 	);
 );
 
-spiral_template(radius, pitch, height) -> (
-	center = __get_center(); 	
+spiral(radius, pitch, size, material) -> (
+	center = __get_center(); 
 	circle = __make_circle(radius);
-	__draw_spiral_from_template(circle, center, pitch, height);
+	__draw_spiral(circle, center, pitch, size, material);
 );
 
-antispiral_template(radius, pitch, height) -> (
-	center = __get_center(); 	
+antispiral(radius, pitch, size, material) -> (
+	center = __get_center(); 
 	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_);
-	__draw_spiral_from_template(circle, center, pitch, height);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); 
+	__draw_spiral(circle, center, pitch, size, material);
+
 );
 
-multispiral_template(radius, pitch, height, ammount) -> (
+multispiral(radius, pitch, size, ammount, material) -> (
 	center = __get_center(); 
 	circle = __make_circle(radius);
 	perimeter = length(circle); 
 	loop(ammount,
-		jump = floor(_ * perimeter/ammount);
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, height);
+		jump = floor(_ * perimeter/ammount); 
+		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); 
+		__draw_spiral(this_circ, center, pitch, size, material);
+	);
+);
+
+antimultispiral(radius, pitch, size, ammount, material) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); 
+	perimeter = length(circle); 
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); 
+		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); 
+		__draw_spiral(this_circ, center, pitch, size, material);
 	);
 );
 
 
+
+
+
+
+__make_template() -> (
+	global_template = l();
+	origin = map(range(3), min(global_positions:0:_, global_positions:1:_)); 
+	volume(
+		global_positions:0:0, global_positions:0:1, global_positions:0:2,
+		global_positions:1:0, global_positions:1:1, global_positions:1:2,
+		if(global_settings:'paste_with_air',
+			global_template:length(global_template) = l(pos(_)-origin, _),
+			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) 
+		);
+	);
+);
+
+
+__clone_template(pos, replace_block) -> (
+	for(global_template, __set_block(pos + _:0, _:1, replace_block) );
+);
+
+
+__draw_spiral_from_template(circle, center, pitch, size) -> (
+	perimeter = length(circle); 
+	
+	__make_template();
+	offset = map(global_positions:0 - global_positions:1, abs(_)); 
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
+	
+	replace_block = __get_replace_block();
+	
+	loop(floor( size / advance_step), 
+		this_step =  __get_step(circle, perimeter, advance_step, _);
+		__clone_template(center + this_step, replace_block);
+	);
+);
+
+spiral_template(radius, pitch, size) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	__draw_spiral_from_template(circle, center, pitch, size);
+);
+
+antispiral_template(radius, pitch, size) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); 
+	__draw_spiral_from_template(circle, center, pitch, size);
+);
+
+multispiral_template(radius, pitch, size, ammount) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	perimeter = length(circle); 
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); 
+		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
+		__draw_spiral_from_template(this_circ, center, pitch, size);
+	);
+);
+
+antimultispiral_template(radius, pitch, size, ammount) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); 
+	perimeter = length(circle); 
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); 
+		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
+		__draw_spiral_from_template(this_circ, center, pitch, size);
+	);
+);
+
+
+
+
 __mark(i, position) -> (
  	colours = l('red', 'lime', 'light_blue'); 
-	e = create_marker('pos' + i, position + l(0.5, 0.5, 0.5), colours:(i-1) + '_concrete');
+	e = create_marker('pos' + i, position + l(0.5, 0.5, 0.5), colours:(i-1) + '_concrete'); 
 	run(str( 
 		'data merge entity %s {Glowing:1b, Fire:32767s, Marker:1b}', query(e, 'uuid') 
 		));
 	put(global_armor_stands, i-1, query(e, 'id')); 
 );
 
+__remove_mark(i) -> (
+	e = entity_id(global_armor_stands:(i));
+ 	if(e != null, modify(e, 'remove'));
+);
+
+
 set_pos(i) -> (
-	try(
+	try( 
  		if( !reduce(range(1,4), _a + (_==i), 0),
 			throw();
 		),
@@ -169,9 +291,8 @@ set_pos(i) -> (
 	
 	print(str('Set your position %d to ',i) + tha_pos);
 
-	if(global_show_pos, 
-		e = entity_id(global_armor_stands:(i-1));
- 		if(e != null, modify(e, 'remove'); print('removing'));
+	if(global_settings:'show_pos', 
+		__remove_mark(i-1); 
 		__mark(i, tha_pos);
 	);
 
@@ -187,8 +308,8 @@ get_pos() -> (
 
 
 toggle_show_pos() ->(
-	global_show_pos = !global_show_pos; 
-	if(global_show_pos,
+	global_settings:'show_pos' = !global_settings:'show_pos'; 
+	if(global_settings:'show_pos',
 		( 
 			for(global_positions, 
 				if(_!=null, __mark( (_i+1) , _) );
@@ -198,19 +319,31 @@ toggle_show_pos() ->(
 		
 		( 
 			for(global_armor_stands, 
-				e = entity_id(_);
-				if(e != null, modify(e, 'remove'));
+				__remove_mark(_i);
 			);
 			print('Positions hidden');
 		);
 	);
 );
 
+
+reset_positions() -> (
+	loop(3, 
+		__remove_mark(_);
+	);
+	global_positions = l(null, null, null); 
+	global_all_set = false;
+	global_armor_stands = l(null, null, null);
+);
+reset_positions();
+
+
 __on_player_clicks_block(player, block, face) -> (
 	if(query(player(), 'holds'):0 == 'golden_sword',
 		set_pos(1);
 	);
 );
+
 
 __on_player_uses_item(player, item_tuple, hand) -> (
 	if(query(player(), 'holds'):0 == 'golden_sword',
@@ -221,9 +354,10 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 	);
 );
 
+
 __on_tick() -> (
 	in_dimension(player(),
-		if(global_all_set && global_show_pos && tick_time()%20 == 0, 
+		if(global_all_set && global_settings:'show_pos' && tick_time()%20 == 0, 
 			min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
 			max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
 			particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
