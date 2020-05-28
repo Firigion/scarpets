@@ -1,10 +1,14 @@
 __command() -> null;
 
 // to store marker postiions and object handles
-global_positions = l(null, null, null);
-global_all_set = false;
-global_armor_stands = l(null, null, null);
-global_show_pos = true;
+global_settings = m(
+						l( 'show_pos' , true ),
+						l( 'paste_with_air' , false ),
+						l( 'axis' , 'y' ), //TODO
+						l( 'replace_block' , 'false'), //TODO
+						l( 'rotate' , 'false' ), //TODO
+						l( 'mode', 'pitch' ) // 'pitch' or 'slope', TODO
+					);
 
 
 __rotated90(list_to_rotate) -> ( //rotates 90 degrees
@@ -44,6 +48,30 @@ __get_center() -> (
 	)
 );
 
+toggle_replace_mode() -> (
+	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
+	if(global_settings:'paste_with_air',
+		print('Template will now be pasted with air'),
+		print('Template will now be pasted without air')
+	);
+);
+
+set_axis(axis) -> (
+	if( ( l('x','y','z')~axis ) == null, 
+		return('Axis must be one of x, y, z')
+	);
+	global_settings:'axis' = axis;
+);
+
+toggle_replace_block() -> (
+	global_settings:'replace_block' = !global_settings:'replace_block';
+	if(global_settings:'replace_block',
+		print('Spiral will now only replce block in your offhand. Hold bucket for liquids and ender pearls for air.'),
+		print('Spiral will paste completly, replacing whatever is there.')
+	);
+);
+
+settings() -> ( print(global_settings) );
 
 ////// Material spirals ///////
 
@@ -95,14 +123,17 @@ multispiral(radius, pitch, height, ammount, material) -> (
 ////// Template spirals ///////
 
 // saves selected area, minus air
-__make_template() -> ( 
+__make_template() -> (
 	global_template = l();
 	origin = map(range(3), min(global_positions:0:_, global_positions:1:_)); //negative-most corner in all dimensions
 	volume(
 		global_positions:0:0, global_positions:0:1, global_positions:0:2,
 		global_positions:1:0, global_positions:1:1, global_positions:1:2,
-		if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
+		if(global_settings:'paste_with_air',
+			global_template:length(global_template) = l(pos(_)-origin, _),
+			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
 		);
+	);
 );
 
 // clone template at given position
@@ -114,18 +145,19 @@ __clone_template(pos) -> (
 __draw_spiral_from_template(circle, center, pitch, height) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
 	__make_template();
+	offset = map(global_positions:0 - global_positions:1, abs(_)); //offsets the selection so that it clones it in the center of the block
 	
 	loop(floor(height/pitch), //loop over the total ammount of spirals
 		turn = _; // what turn am I drawng now (spirals ahve many turns)
 		for(circle, 
 			this_height =  _i * pitch/perimeter + turn * pitch;
-			__clone_template(center + l(_:0, this_height ,  _:1)) 
+			__clone_template(center + l(_:0, this_height ,  _:1) - offset) 
 		)
 	);
 	// now draw the last bit that is under a full circle
 	for(slice(circle, 0, floor( (height/pitch)%1 * perimeter) ),
 		this_height =  _i * pitch/perimeter + floor(height/pitch) * pitch;
-		__clone_template(center + l(_:0, this_height ,  _:1)) 
+		__clone_template(center + l(_:0, this_height ,  _:1) - offset) 
 	);
 );
 
@@ -153,6 +185,18 @@ multispiral_template(radius, pitch, height, ammount) -> (
 	);
 );
 
+antimultispiral_template(radius, pitch, height, ammount) -> (
+	center = __get_center(); // center coordiantes
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
+	perimeter = length(circle); // ammount of blocks in one revolution
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
+		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
+		__draw_spiral_from_template(this_circ, center, pitch, height);
+	);
+);
+
 ////// Handle Markers //////
 
 // Spawn a marker
@@ -163,6 +207,11 @@ __mark(i, position) -> (
 		'data merge entity %s {Glowing:1b, Fire:32767s, Marker:1b}', query(e, 'uuid') 
 		));
 	put(global_armor_stands, i-1, query(e, 'id')); //save the id for future use
+);
+
+__remove_mark(i) -> (
+	e = entity_id(global_armor_stands:(i));
+ 	if(e != null, modify(e, 'remove'));
 );
 
 // set a position
@@ -185,9 +234,8 @@ set_pos(i) -> (
 	
 	print(str('Set your position %d to ',i) + tha_pos);
 
-	if(global_show_pos, // remove previous marker for set positi, if aplicable
-		e = entity_id(global_armor_stands:(i-1));
- 		if(e != null, modify(e, 'remove'); print('removing'));
+	if(global_settings:'show_pos', // remove previous marker for set positi, if aplicable
+		__remove_mark(i-1); //-1 because stupid indexes
 		__mark(i, tha_pos);
 	);
 
@@ -203,8 +251,8 @@ get_pos() -> (
 
 // toggle markers and bounding box visibility
 toggle_show_pos() ->(
-	global_show_pos = !global_show_pos; 
-	if(global_show_pos,
+	global_settings:'show_pos' = !global_settings:'show_pos'; 
+	if(global_settings:'show_pos',
 		( // summon the markers
 			for(global_positions, 
 				if(_!=null, __mark( (_i+1) , _) );
@@ -214,13 +262,23 @@ toggle_show_pos() ->(
 		// else
 		( //remove the markers
 			for(global_armor_stands, 
-				e = entity_id(_);
-				if(e != null, modify(e, 'remove'));
+				__remove_mark(_i);
 			);
 			print('Positions hidden');
 		);
 	);
 );
+
+// remove all markers
+reset_positions() -> (
+	loop(3, 
+		__remove_mark(_);
+	);
+	global_positions = l(null, null, null); // TODO: player-specific positions
+	global_all_set = false;
+	global_armor_stands = l(null, null, null);
+);
+reset_positions();
 
 // set position 1 if player left clicks with a golden sword
 __on_player_clicks_block(player, block, face) -> (
@@ -242,7 +300,7 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 // display particle cube once per second to select marked volume
 __on_tick() -> (
 	in_dimension(player(),
-		if(global_all_set && global_show_pos && tick_time()%20 == 0, 
+		if(global_all_set && global_settings:'show_pos' && tick_time()%20 == 0, 
 			min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
 			max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
 			particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
