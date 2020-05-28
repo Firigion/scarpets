@@ -9,7 +9,8 @@ global_settings = m(
 						l( 'axis' , 'y' ),
 						l( 'replace_block' , false ),
 						l( 'rotate' , false ), 
-						l( 'slope_mode', false )
+						l( 'slope_mode', false ),
+						l( 'max_template_size', 100)
 					);
 global_block_alias = m(
 						l( 'water_bucket', 'water' ),
@@ -62,6 +63,13 @@ toggle_paste_with_air() -> (
 	if(global_settings:'paste_with_air',
 		print('Template will now be pasted with air'),
 		print('Template will now be pasted without air')
+	);
+);
+
+set_max_template_size(value) -> (
+	if( type(value) == 'number' && value > 0, 
+		global_settings:'max_template_size' = value,
+		print('Max template size should be a positive number')
 	);
 );
 
@@ -180,10 +188,6 @@ antimultispiral(radius, pitch, size, ammount, material) -> (
 );
 
 
-
-
-
-
 __make_template() -> (
 	global_template = l();
 	origin = map(range(3), min(global_positions:0:_, global_positions:1:_)); 
@@ -192,9 +196,22 @@ __make_template() -> (
 		global_positions:1:0, global_positions:1:1, global_positions:1:2,
 		if(global_settings:'paste_with_air',
 			global_template:length(global_template) = l(pos(_)-origin, _),
-			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) 
+			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) )
 		);
 	);
+
+	if(length(global_template) > global_settings:'max_template_size',
+		print('Template is too big. Your tried to paste ' + 
+			str( length(global_template) ) +
+			if(global_settings:'paste_with_air',
+				' (counting air) ',
+				' (not counting air) '
+			) +
+			str('but max size is %d. Try increasing it with set_max_template_size.', global_settings:'max_template_size')
+		);
+		true,
+		false 
+	)
 );
 
 
@@ -204,15 +221,15 @@ __clone_template(pos, replace_block) -> (
 
 
 __draw_spiral_from_template(circle, center, pitch, size) -> (
-	perimeter = length(circle); 
+	perimeter = length(circle);
 	
-	__make_template();
+	if(__make_template(), return() );
 	offset = map(global_positions:0 - global_positions:1, abs(_)); 
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
 	
 	replace_block = __get_replace_block();
 	
-	loop(floor( size / advance_step), 
+	loop(floor( size / advance_step),
 		this_step =  __get_step(circle, perimeter, advance_step, _);
 		__clone_template(center + this_step, replace_block);
 	);
