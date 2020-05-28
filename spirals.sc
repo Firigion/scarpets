@@ -4,10 +4,18 @@ __command() -> null;
 global_settings = m(
 						l( 'show_pos' , true ),
 						l( 'paste_with_air' , false ),
-						l( 'axis' , 'y' ), //TODO
-						l( 'replace_block' , 'false'), //TODO
-						l( 'rotate' , 'false' ), //TODO
-						l( 'mode', 'pitch' ) // 'pitch' or 'slope', TODO
+						l( 'axis' , 'y' ),
+						l( 'replace_block' , false ),
+						l( 'rotate' , false ), //TODO
+						l( 'slope_mode', false ),
+						l( 'max_template_size', 100)
+					);
+global_block_alias = m(
+						l( 'water_bucket', 'water' ),
+						l( 'lava_bucket', 'lava'),
+						l( 'feather', 'air'),
+						l( 'ender_eye', 'end_portal'),
+						l( 'flint_and_steel', 'nether_portal')
 					);
 
 
@@ -48,11 +56,10 @@ __get_center() -> (
 	)
 );
 
-toggle_replace_mode() -> (
-	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
-	if(global_settings:'paste_with_air',
-		print('Template will now be pasted with air'),
-		print('Template will now be pasted without air')
+set_max_template_size(value) -> (
+	if( type(value) == 'number' && value > 0, 
+		global_settings:'max_template_size' = value,
+		print('Max template size should be a positive number')
 	);
 );
 
@@ -61,63 +68,123 @@ set_axis(axis) -> (
 		return('Axis must be one of x, y, z')
 	);
 	global_settings:'axis' = axis;
+	if( axis == 'x',
+		__get_step(circle, perimeter, advance_step, i) ->(
+			circle_pos = circle:(i%perimeter);
+			step = l(i * advance_step, circle_pos:0, circle_pos:1) ;
+		),
+		axis == 'y',
+		__get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
+			circle_pos = circle:(i%perimeter);
+			step = l(circle_pos:0, i * advance_step, circle_pos:1)
+		),
+		axis == 'z',
+		__get_step(circle, perimeter, advance_step, i) ->(
+			circle_pos = circle:(i%perimeter);
+			step = l(circle_pos:0, circle_pos:1, i * advance_step) ;
+		),
+	);
+);
+
+toggle_paste_with_air() -> (
+	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
+	if(global_settings:'paste_with_air',
+		print('Template will now be pasted with air'),
+		print('Template will now be pasted without air')
+	);
 );
 
 toggle_replace_block() -> (
 	global_settings:'replace_block' = !global_settings:'replace_block';
 	if(global_settings:'replace_block',
-		print('Spiral will now only replce block in your offhand. Hold bucket for liquids and ender pearls for air.'),
-		print('Spiral will paste completly, replacing whatever is there.')
+		//if replace blocks
+		print('Spiral will now only replce block in your offhand.\n' +
+		'Hold bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.');
+		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, set(pos, material) ),
+		//else
+		print('Spiral will paste completly, replacing whatever is there.');
+		__set_block(pos, material, replace_block) -> set(pos , material)
 	);
 );
 
-settings() -> ( print(global_settings) );
+toggle_slope_mode() -> (
+	global_settings:'slope_mode' = !global_settings:'slope_mode';
+	if(global_settings:'slope_mode',
+		print('Second argument of spiral commands is now slope (in blocks)'),
+		print('Second argument of spiral commands is now pitch(separation between revolutions)')
+	);
+);
+
+settings() -> print(global_settings); // needs redoing
+
+__get_replace_block() -> (
+	block = query(player(), 'holds', 'offhand'):0;
+	alias = global_block_alias:block;
+	if(alias==null, block, alias)
+);
+
+__get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
+	circle_pos = circle:(i%perimeter);
+	step = l(circle_pos:0, i * advance_step, circle_pos:1) ;
+);
+
+__set_block(pos, material, replace_block) -> ( //defaults to no replace
+	set(pos , material) 
+);
 
 ////// Material spirals ///////
 
 //main funtion todraw spiral from material
-__draw_spiral(circle, center, pitch, height, material) -> (
+__draw_spiral(circle, center, pitch, size, material) -> (
 	l(cx, cy, cz) = center; // center coordiantes
 	perimeter = length(circle); // ammount of blocks in one revolution
 	
-	loop(floor(height/pitch), //loop over the total ammount of spirals
-		turn = _; // what turn am I drawng now (spirals ahve many turns)
-		for(circle, 
-			this_height =  _i * pitch/perimeter + turn * pitch;
-			set(cx + _:0, cy + this_height , cz + _:1 , material) 
-		)
-	);
-	// now draw the last bit that is under a full circle
-	for(slice(circle, 0, floor( (height/pitch)%1 * perimeter) ),
-		this_height =  _i * pitch/perimeter + floor(height/pitch) * pitch;
-		set(cx + _:0, cy + this_height , cz + _:1 , material) 
+	replace_block = __get_replace_block();
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
+	
+	loop(floor( size / advance_step), //loop over the total ammount of spirals
+		this_step =  __get_step(circle, perimeter, advance_step, _);
+		__set_block(center + this_step , material, replace_block);
 	);
 );
 
-spiral(radius, pitch, height, material) -> (
+spiral(radius, pitch, size, material) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
-	__draw_spiral(circle, center, pitch, height, material);
+	__draw_spiral(circle, center, pitch, size, material);
 );
 
-antispiral(radius, pitch, height, material) -> (
+antispiral(radius, pitch, size, material) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
 	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
-	__draw_spiral(circle, center, pitch, height, material);
+	__draw_spiral(circle, center, pitch, size, material);
 
 );
 
-multispiral(radius, pitch, height, ammount, material) -> (
+multispiral(radius, pitch, size, ammount, material) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
 	perimeter = length(circle); // ammount of blocks in one revolution
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
 		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); // redefine the circle last for this iteration
-		__draw_spiral(this_circ, center, pitch, height, material);
+		__draw_spiral(this_circ, center, pitch, size, material);
 	);
 );
+
+antimultispiral(radius, pitch, size, ammount, material) -> (
+	center = __get_center(); // center coordiantes
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
+	perimeter = length(circle); // ammount of blocks in one revolution
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
+		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); // redefine the circle last for this iteration
+		__draw_spiral(this_circ, center, pitch, size, material);
+	);
+);
+
 
 
 ////// Template spirals ///////
@@ -134,58 +201,67 @@ __make_template() -> (
 			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
 		);
 	);
+	// Handle template size
+	if(length(global_template) > global_settings:'max_template_size',
+		print('Template is too big. Your tried to paste ' + 
+			str( length(global_template) ) +
+			if(global_settings:'paste_with_air',
+				' (counting air) ',
+				' (not counting air) '
+			) +
+			str('but max size is %d. Try increasing it with set_max_template_size.', global_settings:'max_template_size')
+		);
+		true, // tempalte too big, don't paste it
+		false // paste it
+	)
 );
 
 // clone template at given position
-__clone_template(pos) -> (
-	for(global_template, set(pos + _:0, _:1) );
+__clone_template(pos, replace_block) -> (
+	for(global_template, __set_block(pos + _:0, _:1, replace_block) );
 );
 
 // main function to draw spirals from template (selected area)
-__draw_spiral_from_template(circle, center, pitch, height) -> (
+__draw_spiral_from_template(circle, center, pitch, size) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
-	__make_template();
-	offset = map(global_positions:0 - global_positions:1, abs(_)); //offsets the selection so that it clones it in the center of the block
 	
-	loop(floor(height/pitch), //loop over the total ammount of spirals
-		turn = _; // what turn am I drawng now (spirals ahve many turns)
-		for(circle, 
-			this_height =  _i * pitch/perimeter + turn * pitch;
-			__clone_template(center + l(_:0, this_height ,  _:1) - offset) 
-		)
-	);
-	// now draw the last bit that is under a full circle
-	for(slice(circle, 0, floor( (height/pitch)%1 * perimeter) ),
-		this_height =  _i * pitch/perimeter + floor(height/pitch) * pitch;
-		__clone_template(center + l(_:0, this_height ,  _:1) - offset) 
+	if(__make_template(), return() ); //tempalte was too big
+	offset = map(global_positions:0 - global_positions:1, abs(_)); //offsets the selection so that it clones it in the center of the block
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
+	
+	replace_block = __get_replace_block();
+	
+	loop(floor( size / advance_step), //loop over the total ammount of spirals
+		this_step =  __get_step(circle, perimeter, advance_step, _);
+		__clone_template(center + this_step, replace_block);
 	);
 );
 
-spiral_template(radius, pitch, height) -> (
+spiral_template(radius, pitch, size) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
-	__draw_spiral_from_template(circle, center, pitch, height);
+	__draw_spiral_from_template(circle, center, pitch, size);
 );
 
-antispiral_template(radius, pitch, height) -> (
+antispiral_template(radius, pitch, size) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
 	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
-	__draw_spiral_from_template(circle, center, pitch, height);
+	__draw_spiral_from_template(circle, center, pitch, size);
 );
 
-multispiral_template(radius, pitch, height, ammount) -> (
+multispiral_template(radius, pitch, size, ammount) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
 	perimeter = length(circle); // ammount of blocks in one revolution
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
 		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, height);
+		__draw_spiral_from_template(this_circ, center, pitch, size);
 	);
 );
 
-antimultispiral_template(radius, pitch, height, ammount) -> (
+antimultispiral_template(radius, pitch, size, ammount) -> (
 	center = __get_center(); // center coordiantes
 	circle = __make_circle(radius);
 	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
@@ -193,7 +269,7 @@ antimultispiral_template(radius, pitch, height, ammount) -> (
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
 		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, height);
+		__draw_spiral_from_template(this_circ, center, pitch, size);
 	);
 );
 
