@@ -8,7 +8,8 @@ global_settings = m(
 						l( 'replace_block' , false ),
 						l( 'rotate' , false ), //TODO
 						l( 'slope_mode', false ),
-						l( 'max_template_size', 100)
+						l( 'max_template_size', 100 ),
+						l( 'preview_enabled', false ) //TODO
 					);
 global_block_alias = m(
 						l( 'water_bucket', 'water' ),
@@ -17,6 +18,150 @@ global_block_alias = m(
 						l( 'ender_eye', 'end_portal'),
 						l( 'flint_and_steel', 'nether_portal')
 					);
+
+
+////// Settings'n stuff ///////
+
+set_max_template_size(value) -> (
+	if( type(value) == 'number' && value > 0, 
+		global_settings:'max_template_size' = value;
+		print(format(str('b Max tempalte size value set to %s', value) ) ),
+		print(format('rb Error: ', 'y Max template size should be a positive number') )
+	);
+	return('')
+);
+
+set_axis(axis) -> (
+	if( ( l('x','y','z')~axis ) == null, 
+		print(format('rb Error: ', 'y Axis must be one of ', 'yb x, y ', 'y or ', 'yb z'));
+		return('')
+	);
+	global_settings:'axis' = axis;
+	if( axis == 'x',
+		__get_step(circle, perimeter, advance_step, i) ->(
+			circle_pos = circle:(i%perimeter);
+			step = l(i * advance_step, circle_pos:0, circle_pos:1) ;
+		),
+		axis == 'y',
+		__get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
+			circle_pos = circle:(i%perimeter);
+			step = l(circle_pos:0, i * advance_step, circle_pos:1)
+		),
+		axis == 'z',
+		__get_step(circle, perimeter, advance_step, i) ->(
+			circle_pos = circle:(i%perimeter);
+			step = l(circle_pos:0, circle_pos:1, i * advance_step) ;
+		),
+	);
+	print(format(str('b Spirals will now generate along the %s axis', axis) ) );
+	return('')
+);
+
+toggle_paste_with_air() -> (
+	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
+	if(global_settings:'paste_with_air',
+		print('Template will now be pasted with air'),
+		print('Template will now be pasted without air')
+	);
+	return('')
+);
+
+toggle_replace_block() -> (
+	global_settings:'replace_block' = !global_settings:'replace_block';
+	if(global_settings:'replace_block',
+		//if replace blocks
+		print( format('b Spiral will now only replce block in your offhand.\n',
+			'g Hold bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.') );
+		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, set(pos, material) ),
+		//else
+		print(format( 'b Spiral will paste completly, replacing whatever is there.') );
+		__set_block(pos, material, replace_block) -> set(pos , material)
+	);
+	return('')
+);
+
+toggle_slope_mode() -> (
+	global_settings:'slope_mode' = !global_settings:'slope_mode';
+	if(global_settings:'slope_mode',
+		print(format('b Second argument of spiral commands is now slope (in blocks)') ),
+		print(format('b Second argument of spiral commands is now pitch(separation between revolutions)') )
+	);
+	return('')
+);
+
+// generate interactive string for togglable parameter
+__make_toggle_setting(parameter, hover) -> (
+	str_list = l(
+		str('w * %s: ', parameter), 
+		str('^y %s', hover),
+	);
+	str_list = extend(str_list, __get_button('true', parameter) );
+	str_list = extend(str_list, __get_button('false', parameter) );
+	print(format(str_list))
+);
+
+__get_active_button(value) -> (
+	l( str('yb [%s] ', value) )
+);
+
+__get_inactive_button(value, parameter) -> (
+	l( 
+		str('g [%s] ', value),
+		str('^gb Click to toggle'),
+		str('!/spirals toggle_%s', parameter)
+	)
+);
+
+__get_button(value, parameter) -> (
+	bool_val = if(bool(value), global_settings:parameter, !global_settings:parameter);
+	if( bool_val, __get_active_button(value), __get_inactive_button(value, parameter) )
+);
+
+// generate interactive string for parameter with options
+__make_value_setting(parameter, hover, options) -> (
+	str_list = l(
+		str('w * %s: ', parameter), 
+		str('^y %s', hover),
+	);
+	options_list = l();
+	map( options, 
+			len = length(options_list);
+			options_list:len = str('%sb [%s]', if(global_settings:parameter == _, 'y', 'g',), _);
+			options_list:(len+1) = '^bg Click to set this value';
+			options_list:(len+2) = str('?/spirals set_%s %s', parameter, _) 
+	);
+	print(format( extend(str_list, options_list) ))
+);
+
+// print all settings
+settings() -> (
+	print(format( 'b Spirals app settings:' ));
+	__make_toggle_setting('show_pos', 'Shows markers and outlines selection');
+	__make_toggle_setting('paste_with_air', 'Includes air when pasting template');
+	__make_toggle_setting('replace_block', 'Spirals will only be generated replacing block in offhand');
+	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
+	__make_value_setting('axis', 'Axis along which spirals are generated', l('x', 'y', 'z') );
+	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', l(20, 100, 1200) );
+	return('')
+);
+
+
+////// Utilities ///////
+
+__get_replace_block() -> (
+	block = query(player(), 'holds', 'offhand'):0;
+	alias = global_block_alias:block;
+	if(alias==null, block, alias)
+);
+
+__get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
+	circle_pos = circle:(i%perimeter);
+	step = l(circle_pos:0, i * advance_step, circle_pos:1) ;
+);
+
+__set_block(pos, material, replace_block) -> ( //defaults to no replace
+	set(pos , material) 
+);
 
 
 __rotated90(list_to_rotate) -> ( //rotates 90 degrees
@@ -56,81 +201,6 @@ __get_center() -> (
 	)
 );
 
-set_max_template_size(value) -> (
-	if( type(value) == 'number' && value > 0, 
-		global_settings:'max_template_size' = value,
-		print('Max template size should be a positive number')
-	);
-);
-
-set_axis(axis) -> (
-	if( ( l('x','y','z')~axis ) == null, 
-		return('Axis must be one of x, y, z')
-	);
-	global_settings:'axis' = axis;
-	if( axis == 'x',
-		__get_step(circle, perimeter, advance_step, i) ->(
-			circle_pos = circle:(i%perimeter);
-			step = l(i * advance_step, circle_pos:0, circle_pos:1) ;
-		),
-		axis == 'y',
-		__get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
-			circle_pos = circle:(i%perimeter);
-			step = l(circle_pos:0, i * advance_step, circle_pos:1)
-		),
-		axis == 'z',
-		__get_step(circle, perimeter, advance_step, i) ->(
-			circle_pos = circle:(i%perimeter);
-			step = l(circle_pos:0, circle_pos:1, i * advance_step) ;
-		),
-	);
-);
-
-toggle_paste_with_air() -> (
-	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
-	if(global_settings:'paste_with_air',
-		print('Template will now be pasted with air'),
-		print('Template will now be pasted without air')
-	);
-);
-
-toggle_replace_block() -> (
-	global_settings:'replace_block' = !global_settings:'replace_block';
-	if(global_settings:'replace_block',
-		//if replace blocks
-		print('Spiral will now only replce block in your offhand.\n' +
-		'Hold bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.');
-		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, set(pos, material) ),
-		//else
-		print('Spiral will paste completly, replacing whatever is there.');
-		__set_block(pos, material, replace_block) -> set(pos , material)
-	);
-);
-
-toggle_slope_mode() -> (
-	global_settings:'slope_mode' = !global_settings:'slope_mode';
-	if(global_settings:'slope_mode',
-		print('Second argument of spiral commands is now slope (in blocks)'),
-		print('Second argument of spiral commands is now pitch(separation between revolutions)')
-	);
-);
-
-settings() -> print(global_settings); // needs redoing
-
-__get_replace_block() -> (
-	block = query(player(), 'holds', 'offhand'):0;
-	alias = global_block_alias:block;
-	if(alias==null, block, alias)
-);
-
-__get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
-	circle_pos = circle:(i%perimeter);
-	step = l(circle_pos:0, i * advance_step, circle_pos:1) ;
-);
-
-__set_block(pos, material, replace_block) -> ( //defaults to no replace
-	set(pos , material) 
-);
 
 ////// Material spirals ///////
 
@@ -201,16 +271,19 @@ __make_template() -> (
 			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
 		);
 	);
-	// Handle template size
+	// Handle template size warning
 	if(length(global_template) > global_settings:'max_template_size',
-		print('Template is too big. Your tried to paste ' + 
-			str( length(global_template) ) +
-			if(global_settings:'paste_with_air',
-				' (counting air) ',
-				' (not counting air) '
-			) +
-			str('but max size is %d. Try increasing it with set_max_template_size.', global_settings:'max_template_size')
-		);
+		print( format(
+			'buy Warning',
+			'y : ',
+			'w Template is too big. Your tried to paste ', 
+			str('by %d ', length(global_template)),
+			str('w blocks %s, but max size is ', if(global_settings:'paste_with_air', '(counting air)', '(not counting air)') ),
+			str('by %d', global_settings:'max_template_size' ),
+			'w .\nTry increasing it with ',
+			'b [this] ', '^t Click here!', '?/spirals set_max_template_size 200',
+			'w command.'
+		) );
 		true, // tempalte too big, don't paste it
 		false // paste it
 	)
@@ -292,11 +365,11 @@ __remove_mark(i) -> (
 
 // set a position
 set_pos(i) -> (
-	try( // position index must be 1 or 28done in this convoluted way because it's recycled code)
+	try( // position index must be 1, 2 or 3 
  		if( !reduce(range(1,4), _a + (_==i), 0),
 			throw();
 		),
-		print('Input must be either 1 or 2 for position to set. You input ' + i);
+		print(format('rb Error: ', 'y Input must be either 1, 2 or 3 for position to set. You input ' + i) );
 		return()
 	);
 	// position to be set at the block the player is aiming at, or player position, if there is none
@@ -375,11 +448,28 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 
 // display particle cube once per second to select marked volume
 __on_tick() -> (
-	in_dimension(player(),
-		if(global_all_set && global_settings:'show_pos' && tick_time()%20 == 0, 
-			min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
-			max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
-			particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
-		);
+
+	if( global_all_set && global_settings:'show_pos' &&	tick_time()%20 == 0,			
+		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
+		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
+		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
+	);
+);
+
+__on_tick_ender() -> (
+
+	if( global_all_set && global_settings:'show_pos' &&	tick_time()%20 == 0,			
+		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
+		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
+		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
+	);
+);
+
+__on_tick_nether() -> (
+
+	if( global_all_set && global_settings:'show_pos' &&	tick_time()%20 == 0,			
+		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
+		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
+		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
 	);
 );
