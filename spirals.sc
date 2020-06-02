@@ -9,7 +9,9 @@ global_settings = m(
 						l( 'rotate' , false ), //TODO
 						l( 'slope_mode', false ),
 						l( 'max_template_size', 100 ),
-						l( 'preview_enabled', false ) //TODO
+						l( 'preview_enabled', false ), //TODO
+						l( 'undo_history_size', 10 ),
+						l( 'scheduled_marking', 5), //TODO
 					);
 global_block_alias = m(
 						l( 'water_bucket', 'water' ),
@@ -19,6 +21,7 @@ global_block_alias = m(
 						l( 'flint_and_steel', 'nether_portal')
 					);
 
+global_history = l();
 
 ////// Settings'n stuff ///////
 
@@ -57,6 +60,17 @@ set_axis(axis) -> (
 	return('')
 );
 
+set_undo_histoy_size(value) -> (
+	if( type(value) == 'number' && value > 0, 
+		global_settings:'undo_history_size' = value;
+		print(format(str('b Max undo value set to %s', value) ) ),
+		print(format('rb Error: ', 'y Undo history size should be a positive number') )
+	);
+	index = length(global_history) - global_settings:'undo_history_size';
+	if( index>0 , global_history = slice(global_history, index) );
+	return('')
+);
+
 toggle_paste_with_air() -> (
 	global_settings:'paste_with_air' = !global_settings:'paste_with_air';
 	if(global_settings:'paste_with_air',
@@ -72,10 +86,10 @@ toggle_replace_block() -> (
 		//if replace blocks
 		print( format('b Spiral will now only replce block in your offhand.\n',
 			'g Hold bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.') );
-		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, set(pos, material) ),
+		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, __set_and_save(pos, material) ),
 		//else
 		print(format( 'b Spiral will paste completly, replacing whatever is there.') );
-		__set_block(pos, material, replace_block) -> set(pos , material)
+		__set_block(pos, material, replace_block) -> __set_and_save(pos, material)
 	);
 	return('')
 );
@@ -142,6 +156,7 @@ settings() -> (
 	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
 	__make_value_setting('axis', 'Axis along which spirals are generated', l('x', 'y', 'z') );
 	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', l(20, 100, 1200) );
+	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', l(10, 50, 500) );
 	return('')
 );
 
@@ -159,10 +174,84 @@ __get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
 	step = l(circle_pos:0, i * advance_step, circle_pos:1) ;
 );
 
-__set_block(pos, material, replace_block) -> ( //defaults to no replace
-	set(pos , material) 
+__set_and_save(pos, material) -> ( //defaults to no replace
+	global_this_story:length(global_this_story) = l(pos, block(pos));
+	set(pos , material);
 );
 
+__set_block(pos, material, replace_block) -> __set_and_save(pos, material);
+
+
+// mainly for debug porpuses
+_circle(radius, material) -> (
+	circ = __make_circle(radius);
+	c = pos(player());
+	for(circ, 
+		set(c + l(_:0, 0, _:1), material); 
+		create_marker(str(_i), c + l(_:0, 0, _:1))
+	);	
+);
+
+__get_center() -> (
+	if(global_positions:2 == null,
+		pos(player()),
+		global_positions:2
+	)
+);
+
+__put_into_history(story) -> (
+	global_history:length(global_history) = story;
+	if(length(global_history) > global_settings:'undo_history_size',
+		delete(global_history, 0)
+	);
+);
+
+__undo(index) -> (
+	// iterate over the story backwards
+	for(range(length(global_history:index)-1, -1, -1),
+		set(global_history:index:_:0, global_history:index:_:1);
+	);
+	
+	// remove used story
+	delete(global_history, index);
+);
+
+go_to_story(num) -> (
+
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		print(format('rb Error: ', 'y Need a positive number of steps to go to'));
+		return('')
+	);
+
+	index = length(global_history)-num;
+	if(index<0, 
+		print(format('rb Error: ', str('y You only have %d actions available to undo', length(global_history) ) ));
+		return('')
+	);
+	
+	__undo(index);
+	print(str('Undid what you did %s actions ago', num ));	
+);
+
+undo(num) -> (
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		print(format('rb Error: ', 'y Need a positive number of steps to undo'));
+		return('')
+	);
+
+	index = length(global_history)-num;
+	if(index<0, 
+		print(format('rb Error: ', str('y You only have %d actions to undo available', length(global_history) ) ));
+		return('')
+	);
+	
+	loop(num, __undo(length(global_history)-1) );
+	print(str('Undid the last %d actions', num) );
+);
+
+history_size() -> print(length(global_history));
 
 __rotated90(list_to_rotate) -> ( //rotates 90 degrees
 	map(list_to_rotate, l(_:1, -_:0))
@@ -184,24 +273,6 @@ __make_circle(radius) -> (
 	extend(half,__rotated90(__rotated90(half))); // rotate the half circle 180 degrees and add it
 );
 
-// mainly for debug porpuses
-_circle(radius, material) -> (
-	circ = __make_circle(radius);
-	c = pos(player());
-	for(circ, 
-		set(c + l(_:0, 0, _:1), material); 
-		create_marker(str(_i), c + l(_:0, 0, _:1))
-	);	
-);
-
-__get_center() -> (
-	if(global_positions:2 == null,
-		pos(player()),
-		global_positions:2
-	)
-);
-
-
 ////// Material spirals ///////
 
 //main funtion todraw spiral from material
@@ -211,11 +282,14 @@ __draw_spiral(circle, center, pitch, size, material) -> (
 	
 	replace_block = __get_replace_block();
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
+	global_this_story = l();
 	
 	loop(floor( size / advance_step), //loop over the total ammount of spirals
 		this_step =  __get_step(circle, perimeter, advance_step, _);
 		__set_block(center + this_step , material, replace_block);
 	);
+	__put_into_history(global_this_story); //ensure max history size is not exceeded
+	print(str('Set %d blocks', length(global_this_story) ));
 );
 
 spiral(radius, pitch, size, material) -> (
@@ -254,7 +328,6 @@ antimultispiral(radius, pitch, size, ammount, material) -> (
 		__draw_spiral(this_circ, center, pitch, size, material);
 	);
 );
-
 
 
 ////// Template spirals ///////
@@ -303,11 +376,16 @@ __draw_spiral_from_template(circle, center, pitch, size) -> (
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
 	
 	replace_block = __get_replace_block();
+	global_this_story = l();
 	
 	loop(floor( size / advance_step), //loop over the total ammount of spirals
 		this_step =  __get_step(circle, perimeter, advance_step, _);
-		__clone_template(center + this_step, replace_block);
+		__clone_template( center + this_step, replace_block);
 	);
+	
+	__put_into_history(global_this_story); //ensure max history size is not exceeded
+	print(str('Set %d blocks', length(global_this_story) ));
+
 );
 
 spiral_template(radius, pitch, size) -> (
