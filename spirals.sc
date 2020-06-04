@@ -10,7 +10,7 @@ global_settings = m(
 						l( 'slope_mode', false ),
 						l( 'max_template_size', 100 ),
 						l( 'preview_enabled', false ), //TODO
-						l( 'undo_history_size', 10 ),
+						l( 'undo_history_size', 100 ),
 						l( 'scheduled_marking', 5), //TODO
 					);
 global_block_alias = m(
