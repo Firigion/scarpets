@@ -38,15 +38,32 @@ The app also adds two simple commands to place and remove nether portal POIs fro
 For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully up to date with the features.
 
 # Spirals
-A nice app to make spirals with a few options. To use it, put `spirals.sc` in your scrpits folder and load it with `/script load spirals global`. After that, all functions will be available with the command `/spirals`. If you can't access the scripts folder, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
+A nice app to make spirals with a few options. To use it, put `spirals.sc` in your scrpits folder and load it with `/script load spirals global`. After that, all functions will be available with the command `/spirals`. If you can't access the scripts folder of your world save, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
 
-Available commands:
+### Commands
 * `spiral`: takes radius, separation between cycles of the spiral, total height and material. It will produce a spiral centered around the player. For example, to make a stone spiral with radius 10 and step 5 that makes 10 total cycles to reacha  height of 50: `/spirals spiral 10 5 50 'stone`. If you loaded with the command block, you'd do `/script run spiral(10, 5, 50, 'stone')`.
 * `antispiral`: the same as spiral, but it turns the other way.
-* `multi_spiral`: same as spiral, but takes one extra argument (before material) to decide how many spirals to draw.
+* `multispiral`: same as spiral, but takes one extra argument (before material) to decide how many spirals to draw.
+* `antimultispiral`: you know, like multi spiral, but anti.
 
-This three commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, graba golden sword and use left and right click to define the area. Read about the replace app to see how to use it. Of course, these commands dont take a `material` parameter.
+This four commands have a counterpart in `spiral_template`, `antispiral_template` and `multi_spiral_template`. These commands, intead of using a material to make a one wide spiral, will take in a template and copy it around to make the spiral. To select the template, grab a golden sword and use left and right click to define the area. Read about the replace app to see how to use it. Of course, these commands dont take a `material` parameter. If you don't want to stand in the place you want to be the center of the spiral, you can also define a center with the third position. To set it, shift right click with your sword where you want it to be (if you aren't looking at a block, it will be set at your feet).
 
-If you don't want to stand the place you want to be the center of the spiral, you can also define a center with the third position. To set it, shift right click with your sword where you want it to be (if you aren't looking at a block, it will be set at your feet).
+### Settings
+You also have a bunch of options to further customize your spiral making experience. To avoid cluttering the commands, these are done via settings. To access the settings menu run `settings`, and click your way through the options. Some of them are togglable and the corresponding command is `toggle_<option_name>`, some of them take an argument to set, which you can do with `set_<option_name> <value>`.
 
-Made a [video](https://youtu.be/WL9Pl3eaFaU) for all these functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E). Also made a third [video](https://youtu.be/o8xU7nN55jI) showing the shit + right click thing.
+Current settings available are:
+* `show_pos`: toggle to show/hide markers and box showing selection. Default: `true`.
+* `paste_with_air`: toggle to generate spiral from template counting or disregarding air. Default: `false`.
+* `replace_block`: toggle to generate complete spiral, or generate it only replacing certain block. Instead of using the block to replace as an argument, when this option is enabled, the app wil take whatever block you have in your offhand and replace that one. For stuff you can't easily get in item form, there are a few aliases: hold a feather to replace air, an eye of ender to replace end portals, a flint and steel to replace nether portals and the corresponding buckets for liquids. Default: `false`.
+* `slope_mode`: toggle between slope mode (value `true`) and pitch mode (value`false`). The second argument of the spiral making commands defines how fast the spiral grows. In pitch mode, the number represents the height diference between full revolutions of a spiral, while in slope mode, it represents how many blocks it should go up for every block moved horizontaly. You can use floats like 0.5 to move one block up every second horizontal block. Default: `false`.
+* `axis`: one of `x`, `y` and `z`. Defines the axis about which the spiral is generated. Default: `'y'`.
+* `max_template_size`: a safeguard to avoid using templates that would kill your game, because you misclicked the position selector. This limit counts the actual temaplte volume if `paste_with_air` is `true`, or only the non air blocks, if it's `false`, meaning you can still paste a very large very saprse tempalte. Default is a rather conservative value, you can increase it a bunch if you trust your computer's power. Default: `100`.
+* `undo_history_size`: sets the amount of stories the undo command saves, efectively defining how many mistakes you can fix. Default: `100`.
+
+### Undo
+We have an `undo` command. It takes one argument defining how many steps back you want to go. To undo your last three spirals made , just use `undo 3`. Ez pz. Note that multispirals save to separate stories, so to completly undo a double spiral, you ened to use `undo 2`. 
+
+The undo functionality comes with one extra command: `go_to_story <number>`. This works like `undo`, but instead of undoing the last `<number>` actions, it skips all of them but the last one. So, if you made three spirals and do `go_to_story 3`, it will undo the first spiral you made. Bare in mind, this might have some odd behaviours, because all the `undo` functions do is paste back whatever the spiral replaced. So if you make a spiral, then replace some of it with another spiral and then undo only the first one, it will put back in place whatever *it* replcaed, cutting through the new spiral.
+
+### Videos
+Made a [video](https://youtu.be/WL9Pl3eaFaU) for all the functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E). Also made a third [video](https://youtu.be/o8xU7nN55jI) showing the shift + right click thing. After that I did a separate [video](https://www.youtube.com/watch?v=Im9Do0zVg8w) on some of the settings and [another one](https://www.youtube.com/watch?v=qeGa9eZy8PA) about the undo functions. I make them as i go, don't judge me.
