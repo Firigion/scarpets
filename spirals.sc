@@ -11,7 +11,6 @@ global_settings = m(
 						l( 'max_template_size', 100 ),
 						l( 'preview_enabled', false ), //TODO
 						l( 'undo_history_size', 100 ),
-						l( 'scheduled_marking', 5), //TODO
 					);
 global_block_alias = m(
 						l( 'water_bucket', 'water' ),
@@ -22,6 +21,7 @@ global_block_alias = m(
 					);
 
 global_history = l();
+
 
 ////// Settings'n stuff ///////
 
@@ -273,6 +273,7 @@ __make_circle(radius) -> (
 	extend(half,__rotated90(__rotated90(half))); // rotate the half circle 180 degrees and add it
 );
 
+
 ////// Material spirals ///////
 
 //main funtion todraw spiral from material
@@ -457,7 +458,7 @@ set_pos(i) -> (
 		tha_pos = map(pos(player()), round(_))
 	);
 	global_positions:(i-1) = tha_pos; // save to global positions
-	if(all(slice(global_positions, 0, 2), _!=null), global_all_set = true); 
+	__all_set(); 
 	
 	print(str('Set your position %d to ',i) + tha_pos);
 
@@ -524,30 +525,16 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 	);
 );
 
-// display particle cube once per second to select marked volume
-__on_tick() -> (
-
-	if( global_all_set && global_settings:'show_pos' &&	tick_time()%20 == 0,			
-		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
-		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
-		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
-	);
+__all_set() -> (
+	if(all(slice(global_positions, 0, 2), _!=null), global_all_set = true);
+	__render_box();
 );
 
-__on_tick_ender() -> (
-
-	if( global_all_set && global_settings:'show_pos' &&	tick_time()%20 == 0,			
+__render_box() -> (
+	if(global_all_set,
 		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
 		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
-		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
-	);
-);
-
-__on_tick_nether() -> (
-
-	if( global_all_set && global_settings:'show_pos' &&	tick_time()%20 == 0,			
-		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
-		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
-		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1))
+		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1));
+		schedule(10, '__render_box')
 	);
 );
