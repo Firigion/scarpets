@@ -159,7 +159,7 @@ settings() -> (
 	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
 	__make_value_setting('axis', 'Axis along which spirals are generated', l('x', 'y', 'z') );
 	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', l(20, 100, 1200) );
-	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', l(10, 50, 500) );
+	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', l(10, 100, 500) );
 	return('')
 );
 
@@ -508,7 +508,7 @@ set_pos(i) -> (
 
 // print list of positions
 get_pos() -> (
-	dim = player() ~'dimension';
+	dim = player() ~ 'dimension';
 	for(global_positions:dim, 
  		print(str('Position %d is %s', 
 				_i+1, if(_==null, 'not set', _)));
@@ -517,20 +517,21 @@ get_pos() -> (
 
 // toggle markers and bounding box visibility
 toggle_show_pos() ->(
+	dim = player() ~ 'dimension'; 
 	global_settings:'show_pos' = !global_settings:'show_pos'; 
 	if(global_settings:'show_pos',
 		( // summon the markers
-			for(global_positions, 
+			for(global_positions:dim, 
 				if(_!=null, __mark( (_i+1) , _, dim) );
 			);
-			print('Positions shown');
+			print('Positions are now shown');
 		),
 		// else
 		( //remove the markers
-			for(global_armor_stands, 
-				__remove_mark(_i);
+			for(global_armor_stands:dim, 
+				__remove_mark(_i, dim);
 			);
-			print('Positions hidden');
+			print('Positions are now hidden');
 		);
 	);
 );
@@ -574,7 +575,7 @@ __all_set(dim) -> (
 
 __render_box() -> (
 	dim = current_dimension();
-	if(global_all_set:dim,
+	if(global_all_set:dim && global_settings:'show_pos',
 		min_pos = map(range(3), min(global_positions:dim:0:_, global_positions:dim:1:_));
 		max_pos = map(range(3), max(global_positions:dim:0:_, global_positions:dim:1:_));
 		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1));
