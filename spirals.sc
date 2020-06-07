@@ -281,19 +281,49 @@ __make_circle(radius) -> (
 	extend(half,__rotated90(__rotated90(half))); // rotate the half circle 180 degrees and add it
 );
 
+__assert_pitch(pitch) -> (
+	if(pitch == 0, 
+		print(format('rb Error: ', str('y %s must not be zero', if(global_settings:'slope_mode', 'Slope', 'Pitch')) ) );
+		true,
+		false
+	);
+	
+);
+
 
 ////// Material spirals ///////
+
+__preview_spiral(circle, center, pitch, size, iterations_left) -> (
+	
+	perimeter = length(circle); // ammount of blocks in one revolution
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
+	
+	loop(floor( size / advance_step) - 1 , //loop over the total ammount of spirals
+		this_step = __get_step(circle, perimeter, advance_step, _);
+		next_step = __get_step(circle, perimeter, advance_step, _+1);
+		particle_line('end_rod', center + this_step, center + next_step, 1);
+	);
+	
+	if(iterations_left > 0, 
+		schedule(10, '__preview_spiral', circle, center, pitch, size, iterations_left-1)
+	);
+);
+
+preview_spiral(radius, pitch, size, time) -> (
+	if(__assert_pitch(pitch), return('') );
+	
+	center = __get_center(); // center coordiantes
+	circle = __make_circle(radius);
+	
+	iterations = time * 2; // time is a value in seconds, will render every 10 gt
+	__preview_spiral(circle, center, pitch, size, iterations);	
+);
 
 //main funtion todraw spiral from material
 __draw_spiral(circle, center, pitch, size, material) -> (
 	
-	// check non zero pitch or step
-	if(pitch == 0, 
-		print(format('rb Error: ', str('y %s must not be zero', if(global_settings:'slope_mode', 'Slope', 'Pitch')) ) );
-		return('')
-	);
-	
-	l(cx, cy, cz) = center; // center coordiantes
+	if(__assert_pitch(pitch), return('') );
+
 	perimeter = length(circle); // ammount of blocks in one revolution
 	
 	replace_block = __get_replace_block();
@@ -397,11 +427,8 @@ __clone_template(pos, replace_block) -> (
 __draw_spiral_from_template(circle, center, pitch, size) -> (
 
 	dim = player() ~ 'dimension';
-	// check non zero pitch or step
-	if(pitch == 0, 
-		print(format('rb Error: ', str('y %s must not be zero', if(global_settings:'slope_mode', 'Slope', 'Pitch')) ) );
-		return('')
-	);
+	
+	if(__assert_pitch(pitch), return('') );
 
 	perimeter = length(circle); // ammount of blocks in one revolution
 	
