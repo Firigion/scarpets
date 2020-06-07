@@ -1,6 +1,6 @@
 __command() -> null;
 
-// to store marker postiions and object handles
+// to store marker positions and object handles
 global_settings = m(
 						l( 'show_pos' , true ),
 						l( 'paste_with_air' , false ),
@@ -20,8 +20,11 @@ global_block_alias = m(
 						l( 'flint_and_steel', 'nether_portal')
 					);
 
-global_history = l();
-
+global_history = m(
+					l( 'overworld', l() ),
+					l( 'the_nether', l() ),
+					l( 'the_end', l() );
+				);
 
 ////// Settings'n stuff ///////
 
@@ -161,6 +164,64 @@ settings() -> (
 );
 
 
+////// Undo stuff ///////
+
+__put_into_history(story) -> (
+	dim = player() ~ 'dimension';
+	global_history:dim:length(global_history:dim) = story;
+	if(length(global_history:dim) > global_settings:'undo_history_size',
+		delete(global_history:dim, 0)
+	);
+);
+
+__undo(index, dim) -> (
+	// iterate over the story backwards
+	for(range(length(global_history:dim:index)-1, -1, -1),
+		set(global_history:dim:index:_:0, global_history:dim:index:_:1); // (position, block) pairs
+	);
+	// remove used story
+	delete(global_history:dim, index);
+);
+
+go_to_story(num) -> (
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		print(format('rb Error: ', 'y Need a positive number of steps to go to'));
+		return('')
+	);
+	
+	dim = player() ~ 'dimension';
+
+	index = length(global_history:dim)-num;
+	if(index<0, 
+		print(format('rb Error: ', str('y You only have %d actions available to undo', length(global_history:dim) ) ));
+		return('')
+	);
+	
+	__undo(index, dim);
+	print(str('Undid what you did %s actions ago', num ));	
+);
+
+undo(num) -> (
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		print(format('rb Error: ', 'y Need a positive number of steps to undo'));
+		return('')
+	);
+
+	dim = player() ~ 'dimension';
+	
+	index = length(global_history:dim)-num;
+	if(index<0, 
+		print(format('rb Error: ', str('y You only have %d actions to undo available', length(global_history:dim) ) ));
+		return('')
+	);
+	
+	loop(num, __undo(length(global_history:dim)-1, dim) );
+	print(str('Undid the last %d actions', num) );
+);
+
+
 ////// Utilities ///////
 
 __get_replace_block() -> (
@@ -193,65 +254,12 @@ _circle(radius, material) -> (
 );
 
 __get_center() -> (
-	if(global_positions:2 == null,
+	dim = player() ~ 'dimension';
+	if(global_positions:dim:2 == null,
 		pos(player()),
-		global_positions:2
+		global_positions:dim:2
 	)
 );
-
-__put_into_history(story) -> (
-	global_history:length(global_history) = story;
-	if(length(global_history) > global_settings:'undo_history_size',
-		delete(global_history, 0)
-	);
-);
-
-__undo(index) -> (
-	// iterate over the story backwards
-	for(range(length(global_history:index)-1, -1, -1),
-		set(global_history:index:_:0, global_history:index:_:1);
-	);
-	
-	// remove used story
-	delete(global_history, index);
-);
-
-go_to_story(num) -> (
-
-	//check for valid input
-	if( type(num) != 'number' || num <= 0, 
-		print(format('rb Error: ', 'y Need a positive number of steps to go to'));
-		return('')
-	);
-
-	index = length(global_history)-num;
-	if(index<0, 
-		print(format('rb Error: ', str('y You only have %d actions available to undo', length(global_history) ) ));
-		return('')
-	);
-	
-	__undo(index);
-	print(str('Undid what you did %s actions ago', num ));	
-);
-
-undo(num) -> (
-	//check for valid input
-	if( type(num) != 'number' || num <= 0, 
-		print(format('rb Error: ', 'y Need a positive number of steps to undo'));
-		return('')
-	);
-
-	index = length(global_history)-num;
-	if(index<0, 
-		print(format('rb Error: ', str('y You only have %d actions to undo available', length(global_history) ) ));
-		return('')
-	);
-	
-	loop(num, __undo(length(global_history)-1) );
-	print(str('Undid the last %d actions', num) );
-);
-
-history_size() -> print(length(global_history));
 
 __rotated90(list_to_rotate) -> ( //rotates 90 degrees
 	map(list_to_rotate, l(_:1, -_:0))
@@ -278,6 +286,13 @@ __make_circle(radius) -> (
 
 //main funtion todraw spiral from material
 __draw_spiral(circle, center, pitch, size, material) -> (
+	
+	// check non zero pitch or step
+	if(pitch == 0, 
+		print(format('rb Error: ', str('y %s must not be zero', if(global_settings:'slope_mode', 'Slope', 'Pitch')) ) );
+		return('')
+	);
+	
 	l(cx, cy, cz) = center; // center coordiantes
 	perimeter = length(circle); // ammount of blocks in one revolution
 	
@@ -335,11 +350,21 @@ antimultispiral(radius, pitch, size, ammount, material) -> (
 
 // saves selected area, minus air
 __make_template() -> (
+
+	dim = player() ~ 'dimension';
+	if(!global_all_set:dim,
+		print(format('rb Error: ', 'y You need to make a selection first' )); 
+		return(true) // dont paste anything 
+	);
+	
+	pos0 = global_positions:dim:0;
+	pos1 = global_positions:dim:1;
+	
 	global_template = l();
-	origin = map(range(3), min(global_positions:0:_, global_positions:1:_)); //negative-most corner in all dimensions
+	origin = map(range(3), min(pos0:_, pos1:_)); //negative-most corner in all dimensions
 	volume(
-		global_positions:0:0, global_positions:0:1, global_positions:0:2,
-		global_positions:1:0, global_positions:1:1, global_positions:1:2,
+		pos0:0, pos0:1, pos0:2,
+		pos1:0, pos1:1, pos1:2,
 		if(global_settings:'paste_with_air',
 			global_template:length(global_template) = l(pos(_)-origin, _),
 			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
@@ -370,10 +395,18 @@ __clone_template(pos, replace_block) -> (
 
 // main function to draw spirals from template (selected area)
 __draw_spiral_from_template(circle, center, pitch, size) -> (
+
+	dim = player() ~ 'dimension';
+	// check non zero pitch or step
+	if(pitch == 0, 
+		print(format('rb Error: ', str('y %s must not be zero', if(global_settings:'slope_mode', 'Slope', 'Pitch')) ) );
+		return('')
+	);
+
 	perimeter = length(circle); // ammount of blocks in one revolution
 	
 	if(__make_template(), return() ); //tempalte was too big
-	offset = map(global_positions:0 - global_positions:1, abs(_)); //offsets the selection so that it clones it in the center of the block
+	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)); //offsets the selection so that it clones it in the center of the block
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
 	
 	replace_block = __get_replace_block();
@@ -428,22 +461,26 @@ antimultispiral_template(radius, pitch, size, ammount) -> (
 ////// Handle Markers //////
 
 // Spawn a marker
-__mark(i, position) -> (
+__mark(i, position, dim) -> (
  	colours = l('red', 'lime', 'light_blue'); 
 	e = create_marker('pos' + i, position + l(0.5, 0.5, 0.5), colours:(i-1) + '_concrete'); // crete the marker
 	run(str( //modify some stuff to make it fancier
 		'data merge entity %s {Glowing:1b, Fire:32767s, Marker:1b}', query(e, 'uuid') 
 		));
-	put(global_armor_stands, i-1, query(e, 'id')); //save the id for future use
+	global_armor_stands:dim:(i-1) =  query(e, 'id'); //save the id for future use
 );
 
-__remove_mark(i) -> (
-	e = entity_id(global_armor_stands:(i));
+__remove_mark(i, dim) -> (
+	e = entity_id(global_armor_stands:dim:(i));
  	if(e != null, modify(e, 'remove'));
 );
 
+get_armor_stands() -> print(global_armor_stands);
+
 // set a position
 set_pos(i) -> (
+	dim = player() ~ 'dimension';
+	
 	try( // position index must be 1, 2 or 3 
  		if( !reduce(range(1,4), _a + (_==i), 0),
 			throw();
@@ -457,21 +494,22 @@ set_pos(i) -> (
 		tha_pos = pos(tha_block),
 		tha_pos = map(pos(player()), round(_))
 	);
-	global_positions:(i-1) = tha_pos; // save to global positions
-	__all_set(); 
+	global_positions:dim:(i-1) = tha_pos; // save to global positions
+	__all_set(dim); 
 	
-	print(str('Set your position %d to ',i) + tha_pos);
+	print(str('Set your position %d in %s to ',i, dim) + tha_pos);
 
 	if(global_settings:'show_pos', // remove previous marker for set positi, if aplicable
-		__remove_mark(i-1); //-1 because stupid indexes
-		__mark(i, tha_pos);
+		__remove_mark(i-1, dim); //-1 because stupid indexes
+		__mark(i, tha_pos, dim);
 	);
 
 );
 
 // print list of positions
 get_pos() -> (
-	for(global_positions, 
+	dim = player() ~'dimension';
+	for(global_positions:dim, 
  		print(str('Position %d is %s', 
 				_i+1, if(_==null, 'not set', _)));
  	)
@@ -483,7 +521,7 @@ toggle_show_pos() ->(
 	if(global_settings:'show_pos',
 		( // summon the markers
 			for(global_positions, 
-				if(_!=null, __mark( (_i+1) , _) );
+				if(_!=null, __mark( (_i+1) , _, dim) );
 			);
 			print('Positions shown');
 		),
@@ -498,15 +536,19 @@ toggle_show_pos() ->(
 );
 
 // remove all markers
-reset_positions() -> (
+__reset_positions(dim) -> (
 	loop(3, 
-		__remove_mark(_);
+		__remove_mark(_, dim);
 	);
-	global_positions = l(null, null, null); // TODO: player-specific positions
-	global_all_set = false;
-	global_armor_stands = l(null, null, null);
+	global_positions:dim = l(null, null, null);
+	global_all_set:dim = false;
+	global_armor_stands:dim = l(null, null, null);
 );
-reset_positions();
+
+reset_positions() -> (
+	dim = player() ~ 'dimension';
+	__reset_positions(dim);
+);
 
 // set position 1 if player left clicks with a golden sword
 __on_player_clicks_block(player, block, face) -> (
@@ -525,16 +567,25 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 	);
 );
 
-__all_set() -> (
-	if(all(slice(global_positions, 0, 2), _!=null), global_all_set = true);
+__all_set(dim) -> (
+	if(all(slice(global_positions:dim, 0, 2), _!=null), global_all_set:dim = true);
 	__render_box();
 );
 
 __render_box() -> (
-	if(global_all_set,
-		min_pos = map(range(3), min(global_positions:0:_, global_positions:1:_));
-		max_pos = map(range(3), max(global_positions:0:_, global_positions:1:_));
+	dim = current_dimension();
+	if(global_all_set:dim,
+		min_pos = map(range(3), min(global_positions:dim:0:_, global_positions:dim:1:_));
+		max_pos = map(range(3), max(global_positions:dim:0:_, global_positions:dim:1:_));
 		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1));
 		schedule(10, '__render_box')
 	);
 );
+
+global_positions = m();
+global_all_set = m();
+global_armor_stands = m();
+
+__reset_positions('overworld');
+__reset_positions('the_nether');
+__reset_positions('the_end');
