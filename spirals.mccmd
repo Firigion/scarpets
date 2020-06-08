@@ -1,4 +1,5 @@
 /script run 
+
 __command() -> null;
 
 
@@ -113,8 +114,8 @@ __make_toggle_setting(parameter, hover) -> (
 		str('w * %s: ', parameter), 
 		str('^y %s', hover),
 	);
-	str_list = extend(str_list, __get_button('true', parameter) );
-	str_list = extend(str_list, __get_button('false', parameter) );
+	str_list = __extend(str_list, __get_button('true', parameter) );
+	str_list = __extend(str_list, __get_button('false', parameter) );
 	print(format(str_list))
 );
 
@@ -148,7 +149,7 @@ __make_value_setting(parameter, hover, options) -> (
 			options_list:(len+1) = '^bg Click to set this value';
 			options_list:(len+2) = str('?/spirals set_%s %s', parameter, _) 
 	);
-	print(format( extend(str_list, options_list) ))
+	print(format( __extend(str_list, options_list) ))
 );
 
 
@@ -167,8 +168,7 @@ settings() -> (
 
 
 
-__put_into_history(story) -> (
-	dim = player() ~ 'dimension';
+__put_into_history(story, dim) -> (
 	global_history:dim:length(global_history:dim) = story;
 	if(length(global_history:dim) > global_settings:'undo_history_size',
 		delete(global_history:dim, 0)
@@ -266,7 +266,7 @@ __rotated90(list_to_rotate) -> (
 	map(list_to_rotate, l(_:1, -_:0))
 );
 
-extend(list, extension) -> (
+__extend(list, extension) -> (
 	len = length(list);
 	for(extension, list:(len+_i) = _);
 	return(list)
@@ -278,8 +278,8 @@ __make_circle(radius) -> (
 	x_range = range(-range_val, range_val);
 	
 	quarter1 = map(x_range, l(_, z_function(_)) ); 
-	half = extend(quarter1, __rotated90(quarter1)); 
-	extend(half,__rotated90(__rotated90(half))); 
+	half = __extend(quarter1, __rotated90(quarter1)); 
+	__extend(half,__rotated90(__rotated90(half))); 
 );
 
 __assert_pitch(pitch) -> (
@@ -290,93 +290,6 @@ __assert_pitch(pitch) -> (
 	);
 	
 );
-
-
-
-
-__preview_spiral(circle, center, pitch, size, iterations_left) -> (
-	
-	perimeter = length(circle); 
-	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
-	
-	loop(floor( size / advance_step) - 1 , 
-		this_step = __get_step(circle, perimeter, advance_step, _);
-		next_step = __get_step(circle, perimeter, advance_step, _+1);
-		particle_line('end_rod', center + this_step, center + next_step, 1);
-	);
-	
-	if(iterations_left > 0, 
-		schedule(10, '__preview_spiral', circle, center, pitch, size, iterations_left-1)
-	);
-);
-
-preview_spiral(radius, pitch, size, time) -> (
-	if(__assert_pitch(pitch), return('') );
-	
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	
-	iterations = time * 2; 
-	__preview_spiral(circle, center, pitch, size, iterations);	
-);
-
-
-__draw_spiral(circle, center, pitch, size, material) -> (
-	
-	if(__assert_pitch(pitch), return('') );
-
-	perimeter = length(circle); 
-	
-	replace_block = __get_replace_block();
-	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
-	global_this_story = l();
-	
-	loop(floor( size / advance_step), 
-		this_step =  __get_step(circle, perimeter, advance_step, _);
-		__set_block(center + this_step , material, replace_block);
-	);
-	__put_into_history(global_this_story); 
-	print(str('Set %d blocks', length(global_this_story) ));
-);
-
-spiral(radius, pitch, size, material) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	__draw_spiral(circle, center, pitch, size, material);
-);
-
-antispiral(radius, pitch, size, material) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_); 
-	__draw_spiral(circle, center, pitch, size, material);
-
-);
-
-multispiral(radius, pitch, size, ammount, material) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	perimeter = length(circle); 
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount); 
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); 
-		__draw_spiral(this_circ, center, pitch, size, material);
-	);
-);
-
-antimultispiral(radius, pitch, size, ammount, material) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_); 
-	perimeter = length(circle); 
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount); 
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); 
-		__draw_spiral(this_circ, center, pitch, size, material);
-	);
-);
-
-
 
 
 
@@ -425,66 +338,152 @@ __clone_template(pos, replace_block) -> (
 );
 
 
-__draw_spiral_from_template(circle, center, pitch, size) -> (
 
+
+
+__preview_spiral(circle, center, pitch, size, iterations_left) -> (
+	
+	perimeter = length(circle); 
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
+	
+	loop(floor( size / advance_step) - 1 , 
+		this_step = __get_step(circle, perimeter, advance_step, _);
+		next_step = __get_step(circle, perimeter, advance_step, _+1);
+		particle_line('end_rod', center + this_step, center + next_step, 1);
+	);
+	
+	if(iterations_left > 0, 
+		schedule(10, '__preview_spiral', circle, center, pitch, size, iterations_left-1)
+	);
+);
+
+preview_spiral(radius, pitch, size, time) -> (
+	if(__assert_pitch(pitch), return('') );
+	
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	
+	iterations = time * 2; 
+	__preview_spiral(circle, center, pitch, size, iterations);	
+);
+
+
+__draw_spiral(circle, center, pitch, size, material) -> (
+	
 	dim = player() ~ 'dimension';
 	
 	if(__assert_pitch(pitch), return('') );
 
 	perimeter = length(circle); 
 	
-	if(__make_template(), return() ); 
-	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)); 
-	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
-	
 	replace_block = __get_replace_block();
+	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); 
 	global_this_story = l();
 	
-	loop(floor( size / advance_step), 
+	if(material == 'template',
+	
+		if(__make_template(), return() ); 
+		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; 
+		
+		loop(floor( size / advance_step), 
 		this_step =  __get_step(circle, perimeter, advance_step, _);
-		__clone_template( center + this_step, replace_block);
+		__clone_template( center + this_step - offset, replace_block);
+		),
+	
+		loop(floor( size / advance_step), 
+		this_step =  __get_step(circle, perimeter, advance_step, _);
+		__set_block(center + this_step , material, replace_block);
+		);
+	);
+		
+	__put_into_history(global_this_story, dim); 
+	print(str('Set %d blocks', length(global_this_story) ));
+);
+
+
+spiral(radius, pitch, size, material) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	__draw_spiral(circle, center, pitch, size, material);
+);
+
+antispiral(radius, pitch, size, material) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); 
+	__draw_spiral(circle, center, pitch, size, material);
+
+);
+
+multispiral(radius, pitch, size, ammount, material) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	perimeter = length(circle); 
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); 
+		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) ); 
+		__draw_spiral(this_circ, center, pitch, size, material);
+	);
+);
+
+antimultispiral(radius, pitch, size, ammount, material) -> (
+	center = __get_center(); 
+	circle = __make_circle(radius);
+	circle = map(range(length(circle)-1, -1, -1), circle:_); 
+	perimeter = length(circle); 
+	loop(ammount,
+		jump = floor(_ * perimeter/ammount); 
+		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) ); 
+		__draw_spiral(this_circ, center, pitch, size, material);
+	);
+);
+
+
+
+__make_template() -> (
+
+	dim = player() ~ 'dimension';
+	if(!global_all_set:dim,
+		print(format('rb Error: ', 'y You need to make a selection first' )); 
+		return(true) 
 	);
 	
-	__put_into_history(global_this_story); 
-	print(str('Set %d blocks', length(global_this_story) ));
-
-);
-
-spiral_template(radius, pitch, size) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	__draw_spiral_from_template(circle, center, pitch, size);
-);
-
-antispiral_template(radius, pitch, size) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_); 
-	__draw_spiral_from_template(circle, center, pitch, size);
-);
-
-multispiral_template(radius, pitch, size, ammount) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	perimeter = length(circle); 
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount); 
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, size);
+	pos0 = global_positions:dim:0;
+	pos1 = global_positions:dim:1;
+	
+	global_template = l();
+	origin = map(range(3), min(pos0:_, pos1:_)); 
+	volume(
+		pos0:0, pos0:1, pos0:2,
+		pos1:0, pos1:1, pos1:2,
+		if(global_settings:'paste_with_air',
+			global_template:length(global_template) = l(pos(_)-origin, _),
+			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) 
+		);
 	);
+	
+	if(length(global_template) > global_settings:'max_template_size',
+		print( format(
+			'buy Warning',
+			'y : ',
+			'w Template is too big. Your tried to paste ', 
+			str('by %d ', length(global_template)),
+			str('w blocks %s, but max size is ', if(global_settings:'paste_with_air', '(counting air)', '(not counting air)') ),
+			str('by %d', global_settings:'max_template_size' ),
+			'w .\nTry increasing it with ',
+			'b [this] ', '^t Click here!', '?/spirals set_max_template_size 200',
+			'w command.'
+		) );
+		true, 
+		false 
+	)
 );
 
-antimultispiral_template(radius, pitch, size, ammount) -> (
-	center = __get_center(); 
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_); 
-	perimeter = length(circle); 
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount); 
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, size);
-	);
+
+__clone_template(pos, replace_block) -> (
+	for(global_template, __set_block(pos + _:0, _:1, replace_block) );
 );
+
 
 
 
