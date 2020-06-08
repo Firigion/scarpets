@@ -76,3 +76,6 @@ This app is a direct derivation of the spirals app, so most of the features and 
 Other than that, all of the settings are the same as in the spirals app, except for the `axis` one, which in this case has six options instead of three: `xy, xz, yx, yz, zx` and `zy`. In all of them, the first character indicates the axis along which the wave will be created, and the second one the axis _into_ which it will me created. So, `xy` makes a vertical wave going along the x axis.
 
 FOr a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go watch the videos on spirals for extra info on how to use the tools.
+
+# Curves
+Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>` 
