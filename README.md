@@ -67,3 +67,12 @@ The undo functionality comes with one extra command: `go_to_story <number>`. Thi
 
 ### Videos
 Made a [video](https://youtu.be/WL9Pl3eaFaU) for all the functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E). Also made a third [video](https://youtu.be/o8xU7nN55jI) showing the shift + right click thing. After that I did a separate [video](https://www.youtube.com/watch?v=Im9Do0zVg8w) on some of the settings and [another one](https://www.youtube.com/watch?v=qeGa9eZy8PA) about the undo functions. I make them as i go, don't judge me.
+
+# Waves
+A nice app to make waves with a few options. To use it, put `waves.sc` in your scrpits folder and load it with `/script load waves`. After that, all functions will be available with the command `/waves`. If you can't access the scripts folder of your world save, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
+
+This app is a direct derivation of the spirals app, so most of the features and settings of that appa are directly imported here, so go read about that to learn how to use it. The main difference is of course that the funtion to actualy draw the sapes is `wave`, instead of `spiral`. The other important difference is that to make a wave from the selection you made, you should use `template` as material: `/waves wave 6 3 15 template`. 
+
+Other than that, all of the settings are the same as in the spirals app, except for the `axis` one, which in this case has six options instead of three: `xy, xz, yx, yz, zx` and `zy`. In all of them, the first character indicates the axis along which the wave will be created, and the second one the axis _into_ which it will me created. So, `xy` makes a vertical wave going along the x axis.
+
+FOr a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go watch the videos on spirals for extra info on how to use the tools.
