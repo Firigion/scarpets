@@ -112,8 +112,8 @@ __make_toggle_setting(parameter, hover) -> (
 		str('w * %s: ', parameter), 
 		str('^y %s', hover),
 	);
-	str_list = extend(str_list, __get_button('true', parameter) );
-	str_list = extend(str_list, __get_button('false', parameter) );
+	str_list = __extend(str_list, __get_button('true', parameter) );
+	str_list = __extend(str_list, __get_button('false', parameter) );
 	print(format(str_list))
 );
 
@@ -147,7 +147,7 @@ __make_value_setting(parameter, hover, options) -> (
 			options_list:(len+1) = '^bg Click to set this value';
 			options_list:(len+2) = str('?/spirals set_%s %s', parameter, _) 
 	);
-	print(format( extend(str_list, options_list) ))
+	print(format( __extend(str_list, options_list) ))
 );
 
 // print all settings
@@ -166,8 +166,7 @@ settings() -> (
 
 ////// Undo stuff ///////
 
-__put_into_history(story) -> (
-	dim = player() ~ 'dimension';
+__put_into_history(story, dim) -> (
 	global_history:dim:length(global_history:dim) = story;
 	if(length(global_history:dim) > global_settings:'undo_history_size',
 		delete(global_history:dim, 0)
@@ -265,7 +264,7 @@ __rotated90(list_to_rotate) -> ( //rotates 90 degrees
 	map(list_to_rotate, l(_:1, -_:0))
 );
 
-extend(list, extension) -> (
+__extend(list, extension) -> (
 	len = length(list);
 	for(extension, list:(len+_i) = _);
 	return(list)
@@ -277,8 +276,8 @@ __make_circle(radius) -> (
 	x_range = range(-range_val, range_val);
 	
 	quarter1 = map(x_range, l(_, z_function(_)) ); // starts with quarter circle
-	half = extend(quarter1, __rotated90(quarter1)); // add a quarter by rotating it 90 degrees
-	extend(half,__rotated90(__rotated90(half))); // rotate the half circle 180 degrees and add it
+	half = __extend(quarter1, __rotated90(quarter1)); // add a quarter by rotating it 90 degrees
+	__extend(half,__rotated90(__rotated90(half))); // rotate the half circle 180 degrees and add it
 );
 
 __assert_pitch(pitch) -> (
@@ -322,6 +321,8 @@ preview_spiral(radius, pitch, size, time) -> (
 //main funtion todraw spiral from material
 __draw_spiral(circle, center, pitch, size, material) -> (
 	
+	dim = player() ~ 'dimension';
+	
 	if(__assert_pitch(pitch), return('') );
 
 	perimeter = length(circle); // ammount of blocks in one revolution
@@ -334,7 +335,7 @@ __draw_spiral(circle, center, pitch, size, material) -> (
 		this_step =  __get_step(circle, perimeter, advance_step, _);
 		__set_block(center + this_step , material, replace_block);
 	);
-	__put_into_history(global_this_story); //ensure max history size is not exceeded
+	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
 	print(str('Set %d blocks', length(global_this_story) ));
 );
 
@@ -358,7 +359,7 @@ multispiral(radius, pitch, size, ammount, material) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); // redefine the circle last for this iteration
+		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) ); // redefine the circle last for this iteration
 		__draw_spiral(this_circ, center, pitch, size, material);
 	);
 );
@@ -370,7 +371,7 @@ antimultispiral(radius, pitch, size, ammount, material) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) ); // redefine the circle last for this iteration
+		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) ); // redefine the circle last for this iteration
 		__draw_spiral(this_circ, center, pitch, size, material);
 	);
 );
@@ -433,7 +434,7 @@ __draw_spiral_from_template(circle, center, pitch, size) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
 	
 	if(__make_template(), return() ); //tempalte was too big
-	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)); //offsets the selection so that it clones it in the center of the block
+	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
 	
 	replace_block = __get_replace_block();
@@ -441,10 +442,10 @@ __draw_spiral_from_template(circle, center, pitch, size) -> (
 	
 	loop(floor( size / advance_step), //loop over the total ammount of spirals
 		this_step =  __get_step(circle, perimeter, advance_step, _);
-		__clone_template( center + this_step, replace_block);
+		__clone_template( center + this_step - offset, replace_block);
 	);
 	
-	__put_into_history(global_this_story); //ensure max history size is not exceeded
+	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
 	print(str('Set %d blocks', length(global_this_story) ));
 
 );
@@ -468,7 +469,7 @@ multispiral_template(radius, pitch, size, ammount) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
+		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) );
 		__draw_spiral_from_template(this_circ, center, pitch, size);
 	);
 );
@@ -480,7 +481,7 @@ antimultispiral_template(radius, pitch, size, ammount) -> (
 	perimeter = length(circle); // ammount of blocks in one revolution
 	loop(ammount,
 		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
-		this_circ = extend(slice(circle, jump), slice(circle, 0, jump) );
+		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) );
 		__draw_spiral_from_template(this_circ, center, pitch, size);
 	);
 );
