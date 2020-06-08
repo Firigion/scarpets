@@ -290,6 +290,53 @@ __assert_pitch(pitch) -> (
 );
 
 
+// saves selected area, minus air
+__make_template() -> (
+
+	dim = player() ~ 'dimension';
+	if(!global_all_set:dim,
+		print(format('rb Error: ', 'y You need to make a selection first' )); 
+		return(true) // dont paste anything 
+	);
+	
+	pos0 = global_positions:dim:0;
+	pos1 = global_positions:dim:1;
+	
+	global_template = l();
+	origin = map(range(3), min(pos0:_, pos1:_)); //negative-most corner in all dimensions
+	volume(
+		pos0:0, pos0:1, pos0:2,
+		pos1:0, pos1:1, pos1:2,
+		if(global_settings:'paste_with_air',
+			global_template:length(global_template) = l(pos(_)-origin, _),
+			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
+		);
+	);
+	// Handle template size warning
+	if(length(global_template) > global_settings:'max_template_size',
+		print( format(
+			'buy Warning',
+			'y : ',
+			'w Template is too big. Your tried to paste ', 
+			str('by %d ', length(global_template)),
+			str('w blocks %s, but max size is ', if(global_settings:'paste_with_air', '(counting air)', '(not counting air)') ),
+			str('by %d', global_settings:'max_template_size' ),
+			'w .\nTry increasing it with ',
+			'b [this] ', '^t Click here!', '?/spirals set_max_template_size 200',
+			'w command.'
+		) );
+		true, // tempalte too big, don't paste it
+		false // paste it
+	)
+);
+
+// clone template at given position
+__clone_template(pos, replace_block) -> (
+	for(global_template, __set_block(pos + _:0, _:1, replace_block) );
+);
+
+
+
 ////// Material spirals ///////
 
 __preview_spiral(circle, center, pitch, size, iterations_left) -> (
@@ -331,13 +378,26 @@ __draw_spiral(circle, center, pitch, size, material) -> (
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
 	global_this_story = l();
 	
-	loop(floor( size / advance_step), //loop over the total ammount of spirals
+	if(material == 'template',
+	// make from template
+		if(__make_template(), return() ); //tempalte was too big
+		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
+		
+		loop(floor( size / advance_step), //loop over the total ammount of spirals
+		this_step =  __get_step(circle, perimeter, advance_step, _);
+		__clone_template( center + this_step - offset, replace_block);
+		),
+	//else, make out of material
+		loop(floor( size / advance_step), //loop over the total ammount of spirals
 		this_step =  __get_step(circle, perimeter, advance_step, _);
 		__set_block(center + this_step , material, replace_block);
+		);
 	);
+		
 	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
 	print(str('Set %d blocks', length(global_this_story) ));
 );
+
 
 spiral(radius, pitch, size, material) -> (
 	center = __get_center(); // center coordiantes
@@ -376,8 +436,6 @@ antimultispiral(radius, pitch, size, ammount, material) -> (
 	);
 );
 
-
-////// Template spirals ///////
 
 // saves selected area, minus air
 __make_template() -> (
@@ -424,67 +482,6 @@ __clone_template(pos, replace_block) -> (
 	for(global_template, __set_block(pos + _:0, _:1, replace_block) );
 );
 
-// main function to draw spirals from template (selected area)
-__draw_spiral_from_template(circle, center, pitch, size) -> (
-
-	dim = player() ~ 'dimension';
-	
-	if(__assert_pitch(pitch), return('') );
-
-	perimeter = length(circle); // ammount of blocks in one revolution
-	
-	if(__make_template(), return() ); //tempalte was too big
-	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
-	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
-	
-	replace_block = __get_replace_block();
-	global_this_story = l();
-	
-	loop(floor( size / advance_step), //loop over the total ammount of spirals
-		this_step =  __get_step(circle, perimeter, advance_step, _);
-		__clone_template( center + this_step - offset, replace_block);
-	);
-	
-	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
-	print(str('Set %d blocks', length(global_this_story) ));
-
-);
-
-spiral_template(radius, pitch, size) -> (
-	center = __get_center(); // center coordiantes
-	circle = __make_circle(radius);
-	__draw_spiral_from_template(circle, center, pitch, size);
-);
-
-antispiral_template(radius, pitch, size) -> (
-	center = __get_center(); // center coordiantes
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
-	__draw_spiral_from_template(circle, center, pitch, size);
-);
-
-multispiral_template(radius, pitch, size, ammount) -> (
-	center = __get_center(); // center coordiantes
-	circle = __make_circle(radius);
-	perimeter = length(circle); // ammount of blocks in one revolution
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
-		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, size);
-	);
-);
-
-antimultispiral_template(radius, pitch, size, ammount) -> (
-	center = __get_center(); // center coordiantes
-	circle = __make_circle(radius);
-	circle = map(range(length(circle)-1, -1, -1), circle:_); // to spin the other way around
-	perimeter = length(circle); // ammount of blocks in one revolution
-	loop(ammount,
-		jump = floor(_ * perimeter/ammount); // by how many places to advance to get to the next circle
-		this_circ = __extend(slice(circle, jump), slice(circle, 0, jump) );
-		__draw_spiral_from_template(this_circ, center, pitch, size);
-	);
-);
 
 ////// Handle Markers //////
 
