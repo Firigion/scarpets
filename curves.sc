@@ -157,7 +157,7 @@ __preview_spiral(circle, center, pitch, size, iterations_left) -> (
 	loop(floor( size / advance_step) - 1 , //loop over the total ammount of spirals
 		this_step = __spiral_get_step(circle, perimeter, advance_step, _);
 		next_step = __spiral_get_step(circle, perimeter, advance_step, _+1);
-		particle_line('end_rod', center + this_step, center + next_step, 1);
+		draw_shape('line', 15, 'from', center + this_step, 'to', center + next_step);
 	);
 	
 	if(iterations_left > 0, 
@@ -805,8 +805,8 @@ __render_box() -> (
 	if(global_all_set:dim && global_settings:'show_pos',
 		min_pos = map(range(3), min(global_positions:dim:0:_, global_positions:dim:1:_));
 		max_pos = map(range(3), max(global_positions:dim:0:_, global_positions:dim:1:_));
-		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1));
-		schedule(10, '__render_box')
+		draw_shape('box', 6, 'color', 0xFFFFFF70 , 'fill', 0xFFFFFF20, 'from', min_pos, 'to', max_pos+1 );
+		schedule(5, '__render_box')
 	);
 );
 
