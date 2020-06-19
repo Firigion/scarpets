@@ -428,6 +428,20 @@ soft_replace_filt(property, value) -> (
 );
 
 
+////// Brush ///////
+
+__paste_brush() -> (
+	dim = player() ~ 'dimension';
+	looking_at = query(player(), 'trace', 200, 'blocks');
+	if(looking_at == null, return(''), block_pos = pos(looking_at) );
+	replace_block = __get_replace_block();
+	if(__make_template(), return() ); //tempalte was too big
+	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
+	global_this_story = l();
+	__clone_template( block_pos - offset, replace_block);
+);
+
+
 ////// Settings'n stuff ///////
 
 set_max_template_size(value) -> (
@@ -771,11 +785,13 @@ __on_player_clicks_block(player, block, face) -> (
 
 // set position 2 if player right clicks with a golden sword
 __on_player_uses_item(player, item_tuple, hand) -> (
-	if(query(player(), 'holds'):0 == 'golden_sword',
+	if(item_tuple:0 == 'golden_sword' && hand == 'mainhand',
 		if(query(player(), 'sneaking'),
 			set_pos(3),
 			set_pos(2)
-		);
+		),
+	item_tuple:0 == 'blaze_rod' && hand == 'mainhand',
+		__paste_brush();
 	);
 );
 
