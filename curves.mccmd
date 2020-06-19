@@ -1,4 +1,4 @@
-__command() -> null;
+/script run 
 
 
 global_settings = m(
@@ -157,7 +157,7 @@ __preview_spiral(circle, center, pitch, size, iterations_left) -> (
 	loop(floor( size / advance_step) - 1 , 
 		this_step = __spiral_get_step(circle, perimeter, advance_step, _);
 		next_step = __spiral_get_step(circle, perimeter, advance_step, _+1);
-		particle_line('end_rod', center + this_step, center + next_step, 1);
+		draw_shape('line', 15, 'from', center + this_step, 'to', center + next_step);
 	);
 	
 	if(iterations_left > 0, 
@@ -425,6 +425,20 @@ soft_replace_filt(property, value) -> (
 	
 	__put_into_history(global_this_story, dim); 
 	print(str('Replaced %d blocks', length(global_this_story) ));
+);
+
+
+
+
+__paste_brush() -> (
+	dim = player() ~ 'dimension';
+	looking_at = query(player(), 'trace', 200, 'blocks');
+	if(looking_at == null, return(''), block_pos = pos(looking_at) );
+	replace_block = __get_replace_block();
+	if(__make_template(), return() ); 
+	offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; 
+	global_this_story = l();
+	__clone_template( block_pos - offset, replace_block);
 );
 
 
@@ -771,11 +785,13 @@ __on_player_clicks_block(player, block, face) -> (
 
 
 __on_player_uses_item(player, item_tuple, hand) -> (
-	if(query(player(), 'holds'):0 == 'golden_sword',
+	if(item_tuple:0 == 'golden_sword' && hand == 'mainhand',
 		if(query(player(), 'sneaking'),
 			set_pos(3),
 			set_pos(2)
-		);
+		),
+	item_tuple:0 == 'blaze_rod' && hand == 'mainhand',
+		__paste_brush();
 	);
 );
 
@@ -789,8 +805,8 @@ __render_box() -> (
 	if(global_all_set:dim && global_settings:'show_pos',
 		min_pos = map(range(3), min(global_positions:dim:0:_, global_positions:dim:1:_));
 		max_pos = map(range(3), max(global_positions:dim:0:_, global_positions:dim:1:_));
-		particle_rect('end_rod', min_pos, max_pos + l(1, 1, 1));
-		schedule(10, '__render_box')
+		draw_shape('box', 6, 'color', 0xFFFFFF70 , 'fill', 0xFFFFFF20, 'from', min_pos, 'to', max_pos+1 );
+		schedule(5, '__render_box')
 	);
 );
 
