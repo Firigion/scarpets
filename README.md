@@ -82,3 +82,8 @@ FOr a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go
 
 # Curves
 Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>` 
+
+# Spawning shperes
+To use this app, put the .sc file int your scripts fodler and run `/script load spawning_spheres`. It adds a an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding colour will appear. Inner sphere shows minimum distnace to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another colour to create a second double sphere. Right click with a glass block to delete all renders.
+
+If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
