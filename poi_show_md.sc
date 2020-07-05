@@ -8,7 +8,7 @@ global_markers = m( l('nether', m()), l('overworld', m()) );
 __put_marker(pos, dim) ->(
 	// Create marker at position and give it useful properties and a tag
 	e = create_marker('', pos + l(0.5, 0.5, 0.5), 'purple_stained_glass');
-	run(str('data merge entity %s {Glowing:1b, Fire:32767s}', query(e, 'uuid')));
+	run(str('data merge entity %s {Glowing:1b, Fire:32767s, Marker:1b}', query(e, 'uuid')));
 	modify(e, 'tag', 'nether_poi_marker');
 	// Add the marker to the global marker list
 	global_markers:dim:pos = e;
