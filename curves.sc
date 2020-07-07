@@ -4,7 +4,7 @@ __command() -> null;
 global_settings = m(
 						l( 'show_pos' , true ),
 						l( 'paste_with_air' , false ),
-						l( 'spiral_axis' , 'y' ),
+						l( 'circle_axis' , 'y' ),
 						l( 'wave_axis' , 'xy' ),
 						l( 'replace_block' , false ),
 						l( 'rotate' , false ), //TODO
@@ -12,6 +12,7 @@ global_settings = m(
 						l( 'max_template_size', 100 ),
 						l( 'preview_enabled', false ), //TODO
 						l( 'undo_history_size', 100 ),
+						l( 'max_operations_per_tick', 10000 ),
 					);
 global_block_alias = m(
 						l( 'water_bucket', 'water' ),
@@ -27,6 +28,8 @@ global_history = m(
 					l( 'the_end', l() );
 				);
 
+// keeps track of how many blocks have been set this tick
+global_set_count = 0;
 
 ////// Utilities ///////
 
@@ -41,7 +44,13 @@ __set_and_save(pos, material) -> ( //defaults to no replace
 	set(pos , material);
 );
 
-__set_block(pos, material, replace_block) -> __set_and_save(pos, material);
+__set_block(pos, material, replace_block) -> (
+	__set_and_save(pos, material);
+	if(global_set_count > global_settings:'max_operations_per_tick',
+		global_set_count = 0;
+		game_tick(20);
+	);
+);
 
 __get_center() -> (
 	dim = player() ~ 'dimension';
@@ -374,7 +383,7 @@ __create_planar_functions(R, A, k, from) -> (
 	w(t) -> 0;
 );
 
-__create_trasverse_functions(R, A, k, from) -> (
+__create_transverse_functions(R, A, k, from) -> (
 	u(t, outer(R), outer(from) ) -> R * cos(t + from);
 	v(t, outer(R), outer(from) ) -> R * sin(t + from);
 	w(t, outer(A), outer(k) ) -> A * sin( k * t );
@@ -444,7 +453,7 @@ cwave_transverse_partial(radius, amplitude, cycles, from, to, material) -> (
 	arc = abs(to-from);
 	arclength = __get_arclength_tarsverse(radius, amplitude, cycles, arc);
 	parameter = __get_param(arclength, arc);
-	__create_trasverse_functions(radius, amplitude, cycles, from);
+	__create_transverse_functions(radius, amplitude, cycles, from);
 	__draw_circle_wave(parameter, material);
 
 );
@@ -558,6 +567,14 @@ set_max_template_size(value) -> (
 	return('')
 );
 
+set_max_operations_per_tick(value) -> (
+	if( type(value) == 'number' && value > 0, 
+		global_settings:'max_template_size' = value;
+		print(format(str('b max operations per tick set to %s', value) ) ),
+		print(format('rb Error: ', 'y Max operations per tick should be a positive number') )
+	);
+	return('')
+);
 
 set_circle_axis(axis) -> (
 	if( ( l('x','y','z')~axis ) == null, 
@@ -728,6 +745,7 @@ settings() -> (
 	__make_toggle_setting('replace_block', 'Spirals will only be generated replacing block in offhand');
 	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', l(20, 100, 1200) );
 	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', l(10, 100, 500) );
+	__make_value_setting('max_operations_per_tick', 'Sets the maximum ammount of operations per gametick', l(2000, 10000, 50000) );
 	print(format( 'b Spiral specific settings:' ));
 	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
 	__make_value_setting('circle_axis', 'Axis along which spirals and circular waves are generated', l('x', 'y', 'z') );
@@ -740,6 +758,7 @@ settings() -> (
 ////// Undo stuff ///////
 
 __put_into_history(story, dim) -> (
+	global_set_count = 0; // reset global count
 	global_history:dim:length(global_history:dim) = story;
 	if(length(global_history:dim) > global_settings:'undo_history_size',
 		delete(global_history:dim, 0)
