@@ -265,7 +265,7 @@ __make_curve(L, A) -> (
 	curve = map(x, l(_, floor(A * sin(360 *_ / L)) ));
 	curve = __fill_in(curve);
 	
-	//add seccond quarter
+	//add second quarter
 	quarter_size = curve:(length(curve)-1):0;
 	reflected_quarter = map(curve, l(quarter_size * 2 + 1- _:0, _:1) ); 
 	reflected_quarter = __reflect(reflected_quarter);
@@ -343,6 +343,111 @@ wave(wavelength, amplitude, size, material) -> (
 	
 );
 
+
+
+////// Circle wave ///////
+
+
+// ---- Utils ----
+
+__circle_wave_get_step( u , v, w) -> l(u, w, v); // defaults to y axis
+
+__get_arclength_planar(R, A, k, arc) -> (
+	// Arclength should be int(sqrt( (A * k * cos(k*t))^2 + (A * sin(k*t) + d)^2 ))
+	// Doing this approximation means heavily oversampling the curve
+	arclength = sqrt(A*A * k*k + A*A + R*R + 2*A*R) * arc; 
+);
+
+__get_arclength_tarsverse(R, A, k, arc) -> (
+	// Arclength should be int(sqrt( R^2 + (A * k * cos(k*t))^2 ))
+	// Doing this approximation means heavily oversampling the curve
+	arclength = sqrt(R*R + A*A * k*k) * arc;
+);
+
+__get_param(arclength, arc) -> (
+	parameter = arc * l( range(arclength) ) / arclength;
+);
+
+__create_planar_functions(R, A, k, from) -> (
+	u(t, outer(A), outer(R), outer(k), outer(from)) -> (R + A * sin(t * k) ) * cos(t + from);
+	v(t, outer(A), outer(R), outer(k), outer(from) ) -> (R + A * sin(t * k) ) * sin(t + from);
+	w(t) -> 0;
+);
+
+__create_trasverse_functions(R, A, k, from) -> (
+	u(t, outer(R), outer(from) ) -> R * cos(t + from);
+	v(t, outer(R), outer(from) ) -> R * sin(t + from);
+	w(t, outer(A), outer(k) ) -> A * sin( k * t );
+
+);
+
+
+// ---- Draw functions ----
+
+__draw_circle_wave(parameter, material) -> (
+
+	dim = player() ~ 'dimension';
+	center = __get_center();
+
+	replace_block = __get_replace_block();
+	global_this_story = l();
+	position_list = l();
+	
+	if( material == 'template',
+		// make with tempalte
+		if(__make_template(), return() ); //tempalte was too big
+		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
+
+		__set_function(position, material, replace_block, outer(offset)) -> __clone_template( position - offset, replace_block);
+		,
+	// else, make from block material
+		__set_function(position, material, replace_block) -> __set_block( position, material, replace_block);
+	);
+
+	for( parameter,
+		position = map(center + __circle_wave_get_step( u(_) , v(_) , w(_)), floor(_) );
+		// check for repeated spots
+		if( position_list ~ position, 
+			continue(),
+			position_list:length(position_list) = position
+		);
+		__set_function(position, material, replace_block)
+	);
+
+	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
+	print(str('Set %d blocks', length(global_this_story) ));
+	return('');
+
+);
+
+cwave_planar(radius, amplitude, cycles, material) -> (
+	cwave_planar_partial(radius, amplitude, cycles, 0, 360, material);	
+);
+
+cwave_planar_partial(radius, amplitude, cycles, from, to, material) -> (
+	
+	arc = abs(to-from);
+	arclength = __get_arclength_planar(radius, amplitude, cycles, arc);
+	parameter = __get_param(arclength, arc);
+	__create_planar_functions(radius, amplitude, cycles, from);
+	__draw_circle_wave(parameter, material);
+
+);
+
+cwave_transverse(radius, amplitude, cycles, material) -> (
+	cwave_transverse_partial(radius, amplitude, cycles, 0, 360, material);
+);
+
+
+cwave_transverse_partial(radius, amplitude, cycles, from, to, material) -> (
+	
+	arc = abs(to-from);
+	arclength = __get_arclength_tarsverse(radius, amplitude, cycles, arc);
+	parameter = __get_param(arclength, arc);
+	__create_trasverse_functions(radius, amplitude, cycles, from);
+	__draw_circle_wave(parameter, material);
+
+);
 
 ////// Soft replace ///////
 
@@ -453,29 +558,35 @@ set_max_template_size(value) -> (
 	return('')
 );
 
-set_spiral_axis(axis) -> (
+
+set_circle_axis(axis) -> (
 	if( ( l('x','y','z')~axis ) == null, 
 		print(format('rb Error: ', 'y Axis must be one of ', 'yb x, y ', 'y or ', 'yb z'));
 		return('')
 	);
-	global_settings:'axis' = axis;
+	global_settings:'circle_axis' = axis;
 	if( axis == 'x',
 		__spiral_get_step(circle, perimeter, advance_step, i) ->(
 			circle_pos = circle:(i%perimeter);
 			step = l(i * advance_step, circle_pos:0, circle_pos:1) ;
-		),
+		);
+		__circle_wave_get_step( u , v , w) -> l(w, u, v);
+		,
 		axis == 'y',
 		__spiral_get_step(circle, perimeter, advance_step, i) ->( //defaults to axis y
 			circle_pos = circle:(i%perimeter);
 			step = l(circle_pos:0, i * advance_step, circle_pos:1)
-		),
+		);
+		__circle_wave_get_step( u , v , w) -> l(u, w, v);
+		,
 		axis == 'z',
 		__spiral_get_step(circle, perimeter, advance_step, i) ->(
 			circle_pos = circle:(i%perimeter);
 			step = l(circle_pos:0, circle_pos:1, i * advance_step) ;
-		),
+		);
+		__circle_wave_get_step( u , v , w) -> l(u, v, w);
 	);
-	print(format(str('b Spirals will now generate along the %s axis', axis) ) );
+	print(format(str('b Spirals and circular waves will now generate along the %s axis', axis) ) );
 	return('')
 );
 
@@ -484,7 +595,7 @@ set_wave_axis(axis) -> (
 		print(format('rb Error: ', 'y Axis must be one of ', 'yb xy, xz, yx, yz, zx ', 'y or ', 'yb zy'));
 		return('')
 	);
-	global_settings:'axis' = axis;
+	global_settings:'wave_axis' = axis;
 	if( axis == 'xy',
 		__wave_get_step(wave, len, current_offset, i) -> (
 			wave_pos = wave:(i%len);
@@ -619,7 +730,7 @@ settings() -> (
 	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', l(10, 100, 500) );
 	print(format( 'b Spiral specific settings:' ));
 	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
-	__make_value_setting('spiral_axis', 'Axis along which spirals are generated', l('x', 'y', 'z') );
+	__make_value_setting('circle_axis', 'Axis along which spirals and circular waves are generated', l('x', 'y', 'z') );
 	print(format( 'b Waves specific settings:' ));
 	__make_value_setting('wave_axis', 'Axis along which and into which waves are generated', l('xy', 'xz', 'yx' ,'yz','zx', 'zy') );
 	return('')
