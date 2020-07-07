@@ -78,10 +78,24 @@ This app is a direct derivation of the spirals app, so most of the features and 
 
 Other than that, all of the settings are the same as in the spirals app, except for the `axis` one, which in this case has six options instead of three: `xy, xz, yx, yz, zx` and `zy`. In all of them, the first character indicates the axis along which the wave will be created, and the second one the axis _into_ which it will me created. So, `xy` makes a vertical wave going along the x axis.
 
-FOr a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go watch the videos on spirals for extra info on how to use the tools.
+For a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go watch the videos on spirals for extra info on how to use the tools.
 
 # Curves
-Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>` 
+Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>`.
+
+Curves also includes a new curve type: circular waves (or cwaves). Please note the algorithm to generate these is not as refined as the ones for spirals and waves, so it's quite a bit heavier to excecute. It creates a wave along a circle (duh) with the wave plane being coplanar with the circle (planar waves) or perpendicular to the circle (transverse waves). You have the option to make a full circle or just a partial one and, like always, these curves support template pasting, undo functionality and settings. It shares `axis` settings with spirals. The functions are simply called `cwaves_planar`, `cwaves_transverse`, `cwaves_planar_partial` and `cwaves_transverse_partial`. They have the following arguments:
+
+* `radius`: the radius of the circle
+* `amplitude`: the amplitude of the wave
+* `cycles`: ammount of cycles the wave does in one full turn of the circle. Whole numbers will mean the wave meets itself at the end, resulting in a closed curve. You can play around with non whole numbers for more interesting results.
+* `material`: material out of which the curve is made. Use `template` to create the wave using the selection.
+
+`partial` functions also have the `from` and `to` arguments, in degrees. Note you can make more than one full revolution. Having fractional `cycle`s and multiple turns makes for some interesting patterns. You can also use `from` as a phase value to rotate the shape by some ammount. Just make sure to set `to` to `from + 360` to have the whole shape be rotated.
+
+An extra very small thing added to curves.sc is a world-edit-style brush. Make a selection with your golden sword, grab an endrod and just right click around. It will paste the selection as far as your (probably not elven) eyes can see.
+
+As usual, the bad video showcasing these things can be fount [here](https://youtu.be/gP_p0lJbOjc).
+
 
 # Spawning shperes
 To use this app, put the .sc file int your scripts fodler and run `/script load spawning_spheres`. It adds a an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding colour will appear. Inner sphere shows minimum distnace to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another colour to create a second double sphere. Right click with a glass block to delete all renders.
