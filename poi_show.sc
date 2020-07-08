@@ -37,8 +37,7 @@ __remove_markers(dim) -> (
 	global_markers:dim = m();
 );
 
-
-__on_tick() -> (
+__do_on_tick() -> (
 	if(!(tick_time%global_refresh_rate) && player('*'), 
 		// check for players with ender eyes
 		player_list = filter(player('*'), query(_, 'holds', 'mainhand'):0 == 'ender_eye' || query(_, 'holds', 'offhand'):0 == 'ender_eye');
@@ -52,19 +51,12 @@ __on_tick() -> (
 	)
 );
 
+__on_tick() -> (
+	__do_on_tick();
+);
 
 __on_tick_nether() -> (
-	if(!(tick_time%global_refresh_rate) && player('*'), 
-		// check for players with ender eyes
-		player_list = filter(player('*'), query(_, 'holds', 'mainhand'):0 == 'ender_eye' || query(_, 'holds', 'offhand'):0 == 'ender_eye');
-		// if any players found
-		if(player_list, 
-			// then update markers around them
-			__update_markers(player_list, 'nether'),
-			// else, delete all remaining markers, if there are any
-			if(global_markers, __remove_markers('nether') )
-		)
-	)
+	__do_on_tick()
 );
 
 
@@ -72,6 +64,8 @@ __on_tick_nether() -> (
 set_refresh_rate(val) -> global_refresh_rate = val;
 set_range(val) -> global_range = val;
 // Set a nether portal poi without the block
-portalles_poi() -> set_poi(pos(query(player(), 'trace', 'blocks')), 'nether_portal');
+portalles_poi() -> set_poi(pos(query(player(), 'trace', 5, 'blocks')), 'nether_portal');
 // Remove whatever poi you are looking at
-remove_poi() -> set_poi(pos(query(player(), 'trace', 'blocks')), null);
+remove_poi() -> (
+	set_poi( pos(query(player(), 'trace', 5, 'blocks')) , null);
+);
