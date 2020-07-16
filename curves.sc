@@ -1,32 +1,31 @@
 __command() -> null;
 
 // to store marker positions and object handles
-global_settings = m(
-						l( 'show_pos' , true ),
-						l( 'paste_with_air' , false ),
-						l( 'circle_axis' , 'y' ),
-						l( 'wave_axis' , 'xy' ),
-						l( 'replace_block' , false ),
-						l( 'rotate' , false ), //TODO
-						l( 'slope_mode', false ),
-						l( 'max_template_size', 100 ),
-						l( 'preview_enabled', false ), //TODO
-						l( 'undo_history_size', 100 ),
-						l( 'max_operations_per_tick', 10000 ),
-					);
-global_block_alias = m(
-						l( 'water_bucket', 'water' ),
-						l( 'lava_bucket', 'lava'),
-						l( 'feather', 'air'),
-						l( 'ender_eye', 'end_portal'),
-						l( 'flint_and_steel', 'nether_portal')
-					);
-
-global_history = m(
-					l( 'overworld', l() ),
-					l( 'the_nether', l() ),
-					l( 'the_end', l() );
-				);
+global_settings = {
+						 'show_pos' -> true ,
+						 'paste_with_air' -> false ,
+						 'circle_axis' -> 'y' ,
+						 'wave_axis' -> 'xy' ,
+						 'replace_block' -> false ,
+						 'rotate' -> false , //TODO
+						 'slope_mode' -> false ,
+						 'max_template_size' -> 100 ,
+						 'preview_enabled' -> false , //TODO
+						 'undo_history_size' -> 100 ,
+						 'max_operations_per_tick' -> 10000 ,
+					};
+global_block_alias = {
+						'water_bucket' -> 'water' ,
+						'lava_bucket' -> 'lava' ,
+						'feather' -> 'air' ,
+						'ender_eye' -> 'end_portal' ,
+						'flint_and_steel' -> 'nether_portal',
+					};
+global_history = {
+					'overworld' -> [] ,
+					'the_nether' -> [] ,
+					'the_end' -> [] ,
+				};
 
 // keeps track of how many blocks have been set this tick
 global_set_count = 0;
@@ -40,7 +39,7 @@ __get_replace_block() -> (
 );
 
 __set_and_save(pos, material) -> ( //defaults to no replace
-	global_this_story:length(global_this_story) = l(pos, block(pos));
+	global_this_story:length(global_this_story) = [pos, block(pos)];
 	set(pos , material);
 );
 
@@ -86,8 +85,8 @@ __make_template() -> (
 		pos0:0, pos0:1, pos0:2,
 		pos1:0, pos1:1, pos1:2,
 		if(global_settings:'paste_with_air',
-			global_template:length(global_template) = l(pos(_)-origin, _),
-			if(!air(_), global_template:length(global_template) = l(pos(_)-origin, _) ) //save non-air blocks and positions
+			global_template:length(global_template) = [pos(_)-origin, _],
+			if(!air(_), global_template:length(global_template) = [pos(_)-origin, _] ) //save non-air blocks and positions
 		);
 	);
 	// Handle template size warning
@@ -112,6 +111,21 @@ __make_template() -> (
 __clone_template(pos, replace_block) -> (
 	for(global_template, __set_block(pos + _:0, _:1, replace_block) );
 );
+
+
+__make_set_function(dim, material, replace_block) -> (
+	if( material == 'template',
+		// make with tempalte
+		if(__make_template(), return() ); // retrn if tempalte was too big
+		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
+
+		__set_function(position, outer(replace_block), outer(offset)) -> __clone_template( position - offset, replace_block);
+		,
+	// else, make from block material
+		__set_function(position, outer(material), outer(replace_block)) -> __set_block( position, material, replace_block);
+	);
+);
+
 
 
 ////// Spirals ///////
@@ -184,7 +198,7 @@ preview_spiral(radius, pitch, size, time) -> (
 	__preview_spiral(circle, center, pitch, size, iterations);	
 );
 
-//main funtion todraw spiral from material
+//main funtion to draw spiral from material
 __draw_spiral(circle, center, pitch, size, material) -> (
 	
 	dim = player() ~ 'dimension';
@@ -195,22 +209,14 @@ __draw_spiral(circle, center, pitch, size, material) -> (
 	
 	replace_block = __get_replace_block();
 	advance_step = if(global_settings:'slope_mode', pitch, pitch/perimeter); //pitch encodes slope if slope_mode == true
-	global_this_story = l();
+	global_this_story = [];
 	
-	if(material == 'template',
-	// make from template
-		if(__make_template(), return() ); //tempalte was too big
-		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
-		
-		loop(floor( size / advance_step), //loop over the total ammount of spirals
-		this_step =  __spiral_get_step(circle, perimeter, advance_step, _);
-		__clone_template( center + this_step - offset, replace_block);
-		),
+	__make_set_function(dim, material, replace_block);
+
 	//else, make out of material
-		loop(floor( size / advance_step), //loop over the total ammount of spirals
+	loop(floor( size / advance_step), //loop over the total ammount of spirals
 		this_step =  __spiral_get_step(circle, perimeter, advance_step, _);
-		__set_block(center + this_step , material, replace_block);
-		);
+		__set_function(center + this_step);
 	);
 		
 	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
@@ -321,31 +327,18 @@ wave(wavelength, amplitude, size, material) -> (
 	fractional_fit = size/lenx; //ammount of times the curve fits in target size
 	
 	replace_block = __get_replace_block();
-	global_this_story = l();
+	global_this_story = [];
 	
-	if( material == 'template',
-	// make with tempalte
-		if(__make_template(), return() ); //tempalte was too big
-		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
-	
-		loop( floor( fractional_fit * len ), 
-	
-			current_period = floor(_ / len);
-			this_step = __wave_get_step(wave, len, current_period * lenx, _);
+	__make_set_function(dim, material, replace_block);
 
-			__clone_template( start + this_step - offset, replace_block);
-		)
-		,
-	// else, make from block material
-		loop( floor( fractional_fit * len ), 
-		
-			current_period = floor(_ / len);
-			this_step = __wave_get_step(wave, len, current_period * lenx, _);
-			
-			__set_block(start + this_step , material, replace_block);
-		);
-	);
+	loop( floor( fractional_fit * len ), 
 	
+		current_period = floor(_ / len);
+		this_step = __wave_get_step(wave, len, current_period * lenx, _);
+		
+		__set_function(start + this_step);
+	);
+
 	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
 	print(str('Set %d blocks', length(global_this_story) ));
 	return('');
@@ -353,13 +346,12 @@ wave(wavelength, amplitude, size, material) -> (
 );
 
 
-
 ////// Circle wave ///////
 
 
 // ---- Utils ----
 
-__circle_wave_get_step( u , v, w) -> l(u, w, v); // defaults to y axis
+__circle_wave_get_step(u, v, w) -> [u, w, v]; // defaults to y axis
 
 __get_arclength_planar(R, A, k, arc) -> (
 	// Arclength should be int(sqrt( (A * k * cos(k*t))^2 + (A * sin(k*t) + d)^2 ))
@@ -378,7 +370,7 @@ __get_param(arclength, arc) -> (
 );
 
 __create_planar_functions(R, A, k, from) -> (
-	u(t, outer(A), outer(R), outer(k), outer(from)) -> (R + A * sin(t * k) ) * cos(t + from);
+	u(t, outer(A), outer(R), outer(k), outer(from) ) -> (R + A * sin(t * k) ) * cos(t + from);
 	v(t, outer(A), outer(R), outer(k), outer(from) ) -> (R + A * sin(t * k) ) * sin(t + from);
 	w(t) -> 0;
 );
@@ -387,7 +379,6 @@ __create_transverse_functions(R, A, k, from) -> (
 	u(t, outer(R), outer(from) ) -> R * cos(t + from);
 	v(t, outer(R), outer(from) ) -> R * sin(t + from);
 	w(t, outer(A), outer(k) ) -> A * sin( k * t );
-
 );
 
 
@@ -399,19 +390,11 @@ __draw_circle_wave(parameter, material) -> (
 	center = __get_center();
 
 	replace_block = __get_replace_block();
-	global_this_story = l();
-	position_list = l();
+	global_this_story = [];
+	position_list = [];
 	
-	if( material == 'template',
-		// make with tempalte
-		if(__make_template(), return() ); //tempalte was too big
-		offset = map(global_positions:dim:0 - global_positions:dim:1, abs(_)) / 2; //offsets the selection so that it clones it in the center of the block
-
-		__set_function(position, material, replace_block, outer(offset)) -> __clone_template( position - offset, replace_block);
-		,
-	// else, make from block material
-		__set_function(position, material, replace_block) -> __set_block( position, material, replace_block);
-	);
+	// define function to set with
+	__make_set_function(dim, material, replace_block);
 
 	for( parameter,
 		position = map(center + __circle_wave_get_step( u(_) , v(_) , w(_)), floor(_) );
@@ -420,7 +403,7 @@ __draw_circle_wave(parameter, material) -> (
 			continue(),
 			position_list:length(position_list) = position
 		);
-		__set_function(position, material, replace_block)
+		__set_function(position);
 	);
 
 	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
@@ -457,6 +440,73 @@ cwave_transverse_partial(radius, amplitude, cycles, from, to, material) -> (
 	__draw_circle_wave(parameter, material);
 
 );
+
+
+////// Stars ///////
+
+
+// ---- Utils ----
+
+__draw_line(p1, p2) -> (
+ 	m = p2-p1;
+	max_size = max(map(m, abs(_)));
+	t = l(range(max_size+1))/max_size;
+	for(t, 
+ 		b = m * _ + p1;
+ 		__set_function(b);
+ 	);
+);
+
+// gets n equidistant points (pairs of coors) along a circle of radius R
+__get_points(R, n, phase) -> (
+	angle_step = 360/n;
+	get_step(i, outer(R), outer(angle_step), outer(phase)) -> R * [ cos(i*angle_step + phase), sin(i*angle_step + phase)];
+	map(range(n), get_step(_) );
+);
+
+__interlace_lists(l1, l2) -> (
+	// asumes l1 and l2 of same length
+	out = [];
+	for(l1, 
+		out:length(out) = _;
+		out:length(out) =  l2:_i;
+	);
+	return(out);
+);
+
+
+// ---- Draw functions ----
+
+star(outer_radius, inner_radius, n_points, phase, material) -> (
+
+	dim = player() ~ 'dimension';
+	center = __get_center();
+
+	replace_block = __get_replace_block();
+	global_this_story = [];
+	position_list = [];
+
+	// define function to set with
+	__make_set_function(dim, material, replace_block);
+
+	// get points in inner and pouter radius + interlace them
+	inner_points = __get_points(inner_radius, n_points, phase);
+	outer_points = __get_points(outer_radius, n_points, phase + 360/n_points/2);
+	interlaced_list = __interlace_lists(inner_points, outer_points);
+	interlaced_list:length(interlaced_list) = inner_points:0;
+	
+	// get points and draw the connecting lines
+	loop(length(interlaced_list)-1,
+		p1 = center + __circle_wave_get_step(interlaced_list:_:0, interlaced_list:_:1, 0) ;
+		p2 = center + __circle_wave_get_step(interlaced_list:(_+1):0, interlaced_list:(_+1):1, 0) ;
+		__draw_line(p1, p2);		
+	);
+	
+	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
+	print(str('Set %d blocks', length(global_this_story) ));
+	return('');
+);
+
 
 ////// Soft replace ///////
 
@@ -500,7 +550,7 @@ soft_replace() -> (
 		return('') // dont paste anything 
 	);
 	
-	global_this_story = l();
+	global_this_story = [];
 
 	pos0 = global_positions:dim:0;
 	pos1 = global_positions:dim:1;
@@ -818,9 +868,9 @@ undo(num) -> (
 // Spawn a marker
 __mark(i, position, dim) -> (
  	colours = l('red', 'lime', 'light_blue'); 
-	e = create_marker('pos' + i, position + l(0.5, 0.5, 0.5), colours:(i-1) + '_concrete'); // crete the marker
+	e = create_marker('pos' + i, position + l(0.5, 0.5, 0.5), colours:(i-1) + '_concrete', false); // crete the marker
 	run(str( //modify some stuff to make it fancier
-		'data merge entity %s {Glowing:1b, Fire:32767s, Marker:1b}', query(e, 'uuid') 
+		'data merge entity %s {Glowing:1b, Fire:32767s}', query(e, 'uuid') 
 		));
 	global_armor_stands:dim:(i-1) =  query(e, 'id'); //save the id for future use
 );
