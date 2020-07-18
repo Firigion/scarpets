@@ -1,4 +1,4 @@
-__command() -> null;
+__command() -> help();
 
 // to store marker positions and object handles
 global_settings = {
@@ -724,7 +724,7 @@ toggle_replace_block() -> (
 	global_settings:'replace_block' = !global_settings:'replace_block';
 	if(global_settings:'replace_block',
 		//if replace blocks
-		print( format('b Spiral will now only replce block in your offhand.\n',
+		print( format('b Curves will now only replce block in your offhand.\n',
 			'g Hold bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.') );
 		__set_block(pos, material, replace_block) -> if(block(pos) == replace_block, __set_and_save(pos, material) ),
 		//else
@@ -738,7 +738,7 @@ toggle_slope_mode() -> (
 	global_settings:'slope_mode' = !global_settings:'slope_mode';
 	if(global_settings:'slope_mode',
 		print(format('b Second argument of spiral commands is now slope (in blocks)') ),
-		print(format('b Second argument of spiral commands is now pitch(separation between revolutions)') )
+		print(format('b Second argument of spiral commands is now pitch (separation between revolutions)') )
 	);
 	return('')
 );
@@ -751,7 +751,7 @@ __make_toggle_setting(parameter, hover) -> (
 	);
 	str_list = __extend(str_list, __get_button('true', parameter) );
 	str_list = __extend(str_list, __get_button('false', parameter) );
-	print(format(str_list))
+	print(player(), format(str_list))
 );
 
 __get_active_button(value) -> (
@@ -777,30 +777,31 @@ __make_value_setting(parameter, hover, options) -> (
 		str('w * %s: ', parameter), 
 		str('^y %s', hover),
 	);
-	options_list = l();
+	options_list = [];
 	map( options, 
 			len = length(options_list);
 			options_list:len = str('%sb [%s]', if(global_settings:parameter == _, 'y', 'g',), _);
 			options_list:(len+1) = '^bg Click to set this value';
 			options_list:(len+2) = str('?/curves set_%s %s', parameter, _) 
 	);
-	print(format( __extend(str_list, options_list) ))
+	print(player(), format( __extend(str_list, options_list) ))
 );
 
 // print all settings
 settings() -> (
-	print(format( 'b General settings:' ));
+	print(player(), '======================');
+	print(player(), format( 'b General settings:' ));
 	__make_toggle_setting('show_pos', 'Shows markers and outlines selection');
 	__make_toggle_setting('paste_with_air', 'Includes air when pasting template');
-	__make_toggle_setting('replace_block', 'Spirals will only be generated replacing block in offhand');
-	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', l(20, 100, 1200) );
-	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', l(10, 100, 500) );
-	__make_value_setting('max_operations_per_tick', 'Sets the maximum ammount of operations per gametick', l(2000, 10000, 50000) );
-	print(format( 'b Spiral specific settings:' ));
+	__make_toggle_setting('replace_block', 'Shapes will only be generated replacing block in offhand');
+	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', [20, 100, 1200] );
+	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', [10, 100, 500] );
+	__make_value_setting('max_operations_per_tick', 'Sets the maximum ammount of operations per gametick', [2000, 10000, 50000] );
+	print(player(), format( 'b Shapes settings:' ));
 	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
-	__make_value_setting('circle_axis', 'Axis along which spirals and circular waves are generated', l('x', 'y', 'z') );
-	print(format( 'b Waves specific settings:' ));
+	__make_value_setting('circle_axis', 'Axis along which circular stuff is generated. Affects stars, spirals and cwaves', l('x', 'y', 'z') );
 	__make_value_setting('wave_axis', 'Axis along which and into which waves are generated', l('xy', 'xz', 'yx' ,'yz','zx', 'zy') );
+	print(player(), '');
 	return('')
 );
 
@@ -879,8 +880,6 @@ __remove_mark(i, dim) -> (
 	e = entity_id(global_armor_stands:dim:(i));
  	if(e != null, modify(e, 'remove'));
 );
-
-get_armor_stands() -> print(global_armor_stands);
 
 // set a position
 set_pos(i) -> (
@@ -997,3 +996,266 @@ global_armor_stands = m();
 __reset_positions('overworld');
 __reset_positions('the_nether');
 __reset_positions('the_end');
+
+
+////// Handle Markers //////
+
+help() -> (
+	print(player(), '======================');
+	print(player(), format( 'b Help:' ));
+	print(player(), 'Click the following options to get category specific help. All curves commands will tell you the arguments they require if you run them without arguments.');
+	__make_help_categories_buttons(['Positions', 'Undo', 'Brush', 'Replace', 'Curves']);
+	print(player(), '');
+	print(player(), format('g Curves app by Firigion'));
+	print(player(), format('') );
+);
+
+__make_help_categories_buttons(categories) -> (
+	cat_list = [];
+	for( categories, 
+		len = length(cat_list);
+		cat_list:len = str('qb [%s] ', _);
+		cat_list:(len+1) = '^bg Click to see this category';
+		cat_list:(len+2) = str('!/curves help_%s', lower(_)) 
+	);
+	print(player(), format(cat_list) );
+);
+
+help_positions() -> (
+	print(player(), '======================');
+	print(player(), format( 'b Positions help:' ));
+	description1 = ['w You have three positions to set. Positions 1 and 2 define a selection, while position 3 defines the center or origin of the curves. ' ,
+					'w To set them you can use ',
+					'yb /curves set_pos i ',
+					'^bg Click to run!',
+					'?/curves set_pos ',
+					'w where i should be 1, 2 or 3. ',
+					];
+	description2 = ['w Alternatively, you can also grab a ',
+					'db golden sword ',
+					'^bg Click to get one!',
+					str('!/give %s golden_sword{display:{Name:\'{"text":"Marker","color":"gold"}\',Lore:[\'{"text":"Click to set positions","color":"gray"}\']},Enchantments:[{}]} 1', player() ),
+					'w and use left and right click to set positions 1 and 2, and shift right click to set position 3. ',
+					'w Note that you can left click in mid air, but not right click. ',
+					];
+					
+	description3 = ['w To delete selections and positions, use ',
+					'yb /curves reset_positions',
+					'^bg Click to run!',
+					'?/curves reset_positions',
+					'w . You can toggle positions and selection rendering on and off in ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w .'
+					];
+
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), format(description3) );
+	print(player(), '');
+);
+
+help_undo() -> (
+	print(player(), '======================');
+	print(player(), format( 'b Undo help:' ));
+	description1 = ['w All actions done by this app are saved into history. You can undo any number of actions with ' ,
+					'yb /curves set_pos n ',
+					'^bg Click to run!',
+					'?/curves undo ',
+					'w where n should be the ammount of actions to undo, of course. ',
+					];					
+	description2 = ['w You can also use  ',
+					'yb /curves go_back_stories n ',
+					'^bg Click to run!',
+					'?/curves go_back_stories ',
+					'w to skip over a bunch of actions and undo a specific one. For example, n=3 will undo the action you did three things ago without touching the last two you did. ',
+					'w Bare in mind that the undo history will be lost after you close the world, so be careful.'
+					];
+	description3 = ['w Undo histoy has a maximum size of 100 actions, which you can change in  ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w .'
+					];
+
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), format(description3) );
+	print(player(), '');
+);
+
+help_brush() -> (
+	print(player(), '======================');
+	print(player(), format( 'b Brush help:' ));
+	description1 = ['w A very simple functionality where right clicking with a blaze rod will plop wahtever selection you have created. ' ,
+					'w The app will ray trace and place in on the first block it encounters, so you can paste your selection at a distance.'
+					];
+	print(player(), format(description1) );
+	print(player(), '');
+);
+
+help_replace() -> (
+	print(player(), '======================');
+	print(player(), format( 'b Soft Replace help:' ));
+	description1 = ['w This functionality allows you to replace a block with another one, but keeping its block properties. ' ,
+					'w This means that if you replace cobble stairs with oak stairs, all the new stairs will have the orientation the old ones had.'
+					];
+	description2 = ['w To use it, put the block you want to replace in the off hand, the block you want to replace with in the main hand and select the area in which to replace stuff. ' ,
+					'w Then, you can use ',
+					'yb /curves soft_replace ',
+					'^bg Click to run!',
+					'?/curves soft_replace',
+					'w to simply excecute the command or ',
+					'yb /curves soft_replace_filt <property> <value> ',
+					'^bg Click to run!',
+					'?/curves soft_replace_filt ',
+					'w to only replace blocks that have a given property set to that value. ',
+					'w For example, setting property to ',
+					'b half ',
+					'w and value to ',
+					'b top ',
+					'w will only replace top stairs.'
+					];
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), '');
+);
+
+help_curves() -> (
+	print(player(), '======================');
+	print(player(), format( 'b Curves help:' ));
+	description1 = ['w The app comes with a bunch of curves options, some of them have themselves a few variations. ',
+					'w All curves have a few parameters that define them and a last parameter that sets the material the curve is made of. ',
+					'w That material can be any minecraft block, or can be ',
+					'b template',
+					'w . If you choose template as material, the app will use your selection as a template and paste it along the curve. ',
+					'w You can choose to have the template include or exclude air in the selection, which you can toggle in ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w .'
+					];					
+	description2 = ['w There you can also toggle the option to have the curves only be generated replacing certain blocks. ',
+					'w Place whatever block you want to replace in your offhand and run the curve command. ',
+					'w Some blocks have aliases: bucket for liquids, feather for air, ender eye for end portal, and flint and steel for nether portal.'
+					];
+	description3 = ['w For more detailed info on how to use each curve, click on the list below. ',
+					'w You can also jsut run the curve commands without parameters and the game will tell you what aprameters it needs. ',
+					];
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), format(description3) );
+	__make_help_categories_buttons(['Spiral', 'Wave', 'CWave', 'Star']);
+	print(player(), '');
+);
+
+help_spiral() -> (
+		print(player(), '======================');
+	print(player(), format( 'b Spirals help:' ));
+	description1 = ['w Spirals are defined by their radius, how fast they grow and how tall they are. ',
+					'w The second argument can be either ',
+					'b pitch ',
+					'w or ',
+					'b slope',
+					'w , which you can set in ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w . In the former case, you you set how many blocks the spiral advances each time it completes a full revolution. ',
+					'w In the latter, you define how many blocks it advances each block. '
+					];
+	description2 = ['w You can set the diretion along which the spiral forms with the ',
+					'b circle_axis ',
+					'w setting.'
+					];
+	description3 = ['w Spirals come in four flavours: regular spiral, antispiral, which is just the spiral rotating in the opposite direction, and multispiral variations of those. ',
+					'w Multispirals take a fourth argument that set how many spirals to generate. They will evenly spaced along the circle. '
+					];
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), format(description3) );
+	print(player(), '');
+);
+
+help_wave() -> (
+		print(player(), '======================');
+	print(player(), format( 'b Waves help:' ));
+	description1 = ['w Waves are defined by their wavelength (how many blocks it takes to complete an oscilation), ',
+					'w their amplitude (how big a half oscilation is), and their size (how long or tall the whole shape is). ',
+					];
+	description2 = ['w Waves generate along an axis and into another axis, both of which you can choose in ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w . For example, setting ',
+					'b wave_axis ',
+					'w to ',
+					'b xy ',
+					'w means you will get a vertical wave that extends into the (positive) x axis, while ',
+					'b xz ',
+					'w makes a horizontal wave along the x axis.'
+					];
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), format(description3) );
+	print(player(), '');
+);
+
+
+help_cwave() -> (
+		print(player(), '======================');
+	print(player(), format( 'b Circular waves help:' ));
+	description1 = ['w CWaves, or circular waves are just waves that go around in a circle. ',
+					'w They are defined by the radius of the circle, the amplitude of the wave and the amount of oscilations to have in a full circle. ',
+					];
+	description2 = ['w You can set the direction perpendicular to the circle with the ',
+					'b circle_axis ',
+					'w setting in ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w .'
+					];
+	description3 = ['w Circular waves come in two flavours: ',
+					'yb planar ',
+					'^bg Click to run!',
+					'?/curves cwave_planar ',
+					'w and ',
+					'yb transverse ',
+					'^bg Click to run!',
+					'?/curves cwave_transverse ',
+					'w . The former will create the wave in the plane defined by the circle, while the latter will create it perpendicular to it. ',
+					'w Both flavours come with a ',
+					'b partial ',
+					'w option. Partial cwaves take two extra arguments defining the starting and finishing angle to the circle, ',
+					'w so you can make just a half circle, or two full cycles, if you choose.'
+					];
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), format(description3) );
+	print(player(), '');
+);
+
+
+
+help_star() -> (
+		print(player(), '======================');
+	print(player(), format( 'b Stars help:' ));
+	description1 = ['w Stars are defined by the outer radius, the inner radius, the number of points N and the phase or rotation. ',
+					'w The way they are constructed is by selecting N points along the circle with outer radius, anther N points along the inner circle and connecting them with straight lines. ',
+					'w This means that setting inner radius equal to outer radius will generate polygons with 2N sides, and setting N to 2 will generate a rhombus.'
+					];
+	description2 = ['w You can set the direction perpendicular to the star with the ',
+					'b circle_axis ',
+					'w setting in ',
+					'tb settings',
+					'^bg Click to run!',
+					'!/curves settings',
+					'w .'
+					];
+
+	print(player(), format(description1) );
+	print(player(), format(description2) );
+	print(player(), '');
+);
