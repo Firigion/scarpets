@@ -40,6 +40,11 @@ The app also adds two simple commands to place and remove nether portal POIs fro
 
 For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully up to date with the features.
 
+# Spawning shperes
+To use this app, put the .sc file int your scripts fodler and run `/script load spawning_spheres`. It adds a an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding colour will appear. Inner sphere shows minimum distnace to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another colour to create a second double sphere. Right click with a glass block to delete all renders.
+
+If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
+
 # Spirals
 A nice app to make spirals with a few options. To use it, put `spirals.sc` in your scrpits folder and load it with `/script load spirals`. After that, all functions will be available with the command `/spirals`. If you can't access the scripts folder of your world save, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
 
@@ -49,7 +54,7 @@ A nice app to make spirals with a few options. To use it, put `spirals.sc` in yo
 * `multispiral`: same as spiral, but takes one extra argument (before material) to decide how many spirals to draw.
 * `antimultispiral`: you know, like multi spiral, but anti.
 
-You have the option to use a special material. If instead of a Minecraft block name you enter `template` as material, it will take in a template and copy it around to make the spiral. To select the template, grab a golden sword and use left and right click to define the area. Read about the replace app to see how to use it. Of course, these commands dont take a `material` parameter. If you don't want to stand in the place you want to be the center of the spiral, you can also define a center with the third position. To set it, shift right click with your sword where you want it to be (if you aren't looking at a block, it will be set at your feet).
+You have the option to use a special material. If instead of a Minecraft block name you enter `template` as material, it will take in a template and copy it around to make the spiral. To select the template, grab a golden sword and use left and right click to define the area. Read about the replace app to see how to use it. If you don't want to stand in the place you want to be the center of the spiral, you can also define a center with the third position. To set it, shift right click with your sword where you want it to be (if you aren't looking at a block, it will be set at your feet).
 
 ### Settings
 You also have a bunch of options to further customize your spiral making experience. To avoid cluttering the commands, these are done via settings. To access the settings menu run `settings`, and click your way through the options. Some of them are togglable and the corresponding command is `toggle_<option_name>`, some of them take an argument to set, which you can do with `set_<option_name> <value>`.
@@ -74,16 +79,17 @@ Made a [video](https://youtu.be/WL9Pl3eaFaU) for all the functions, except multi
 # Waves
 A nice app to make waves with a few options. To use it, put `waves.sc` in your scrpits folder and load it with `/script load waves`. After that, all functions will be available with the command `/waves`. If you can't access the scripts folder of your world save, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
 
-This app is a direct derivation of the spirals app, so most of the features and settings of that app are directly imported here, so go read about that to learn how to use it. The main difference is of course that the funtion to actualy draw the sapes is `wave`, instead of `spiral`. `waves` have four parameters: `wavelength`, `amplitude`, `size`, `material`. `size` defines how long (or tall, deoending on direction) the wave is going to be. Bare in mind that the actual size the wave is generated might be up to three blocks off of `size`. This was done this way to preserve the symmetricness (?) of the curve.
+This app is a direct derivation of the spirals app, so most of the features and settings of that app are directly imported here, so go read about that to learn how to use it. The main difference is of course that the funtion to actualy draw the sapes is `wave`, instead of `spiral`. `waves` have four parameters: `wavelength`, `amplitude`, `size`, `material`. `size` defines how long (or tall, deoending on direction) the wave is going to be. Bare in mind that the actual size the wave is generated might be up to three blocks off of `size`. This was done this way to preserve the symmetricness (symmetricy?) of the curve.
 
 Other than that, all of the settings are the same as in the spirals app, except for the `axis` one, which in this case has six options instead of three: `xy`, `xz`, `yx`, `yz`, `zx` and `zy`. In all of them, the first character indicates the axis along which the wave will be created, and the second one the axis _into_ which it will me created. So, `xy` makes a vertical wave going along the x axis.
 
 For a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go watch the videos on spirals for extra info on how to use the tools.
 
 # Curves
-Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>`.
+Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>`. The curves app also includes two new shapes, a 'help' command and a very simple brush (just make a selection and right click with a blaze rod). A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
 
-Curves also includes a new curve type: circular waves (or cwaves). Please note the algorithm to generate these is not as refined as the ones for spirals and waves, so it's quite a bit heavier to excecute. It creates a wave along a circle (duh) with the wave plane being coplanar with the circle (planar waves) or perpendicular to the circle (transverse waves). You have the option to make a full circle or just a partial one and, like always, these curves support template pasting, undo functionality and settings. It shares `axis` settings with spirals. The functions are simply called `cwaves_planar`, `cwaves_transverse`, `cwaves_planar_partial` and `cwaves_transverse_partial`. They have the following arguments:
+### Circular waves (cwaves)
+Please note the algorithm to generate these is not as refined as the ones for spirals and waves, so it's quite a bit heavier to excecute. It creates a wave along a circle (duh) with the wave plane being coplanar with the circle (planar waves) or perpendicular to the circle (transverse waves). You have the option to make a full circle or just a partial one and, like always, these curves support template pasting, undo functionality and settings. It shares `axis` settings with spirals. The functions are simply called `cwaves_planar`, `cwaves_transverse`, `cwaves_planar_partial` and `cwaves_transverse_partial`. They have the following arguments:
 
 * `radius`: the radius of the circle
 * `amplitude`: the amplitude of the wave
@@ -92,12 +98,18 @@ Curves also includes a new curve type: circular waves (or cwaves). Please note t
 
 `partial` functions also have the `from` and `to` arguments, in degrees. Note you can make more than one full revolution. Having fractional `cycle`s and multiple turns makes for some interesting patterns. You can also use `from` as a phase value to rotate the shape by some ammount. Just make sure to set `to` to `from + 360` to have the whole shape be rotated.
 
-An extra very small thing added to curves.sc is a world-edit-style brush. Make a selection with your golden sword, grab an endrod and just right click around. It will paste the selection as far as your (probably not elven) eyes can see.
+As usual, the bad video showcasing these things (plus a few tricks) can be found [here](https://youtu.be/gP_p0lJbOjc).
 
-As usual, the bad video showcasing these things can be fount [here](https://youtu.be/gP_p0lJbOjc).
+### Stars
+It defines an N pointed star with the command `/curves star`. It shares axis settings with spirals and cwaves, and defines a star by taking N points on an outer circle, N points on an inner circle, and connecting them with straingth lines. The parameters are:
 
+* `outer_radius`: radius of the outer circle.
+* `inner_radius`: radius of the inner circle.
+* `n_points`: the ammount of points in the star.
+* `phase`: a phase or rotation, so that you can point your stars in any direction you want.
+* `material`: material out of which the curve is made. Use `template` to create the star using the selection.
 
-# Spawning shperes
-To use this app, put the .sc file int your scripts fodler and run `/script load spawning_spheres`. It adds a an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding colour will appear. Inner sphere shows minimum distnace to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another colour to create a second double sphere. Right click with a glass block to delete all renders.
+Because the star is build by connecting points, if you set inner and outer radius to the same value, you will get a polygon of 2N sides. Also, 2 and 3 pointed stars are not a thing, but they make good rhombi and triangle/iregular hexagon tools.
 
-If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
+Here's a [video](https://www.youtube.com/watch?v=XT4XJngGZRM&t=4s) showing this functionality and some tricks.
+
