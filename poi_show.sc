@@ -37,26 +37,26 @@ __remove_markers(dim) -> (
 	global_markers:dim = m();
 );
 
-__do_on_tick() -> (
+__do_on_tick(dim) -> (
 	if(!(tick_time%global_refresh_rate) && player('*'), 
 		// check for players with ender eyes
 		player_list = filter(player('*'), query(_, 'holds', 'mainhand'):0 == 'ender_eye' || query(_, 'holds', 'offhand'):0 == 'ender_eye');
 		// if any players found
 		if(player_list, 
 			// then update markers around them
-			__update_markers(player_list, 'overworld'),
+			__update_markers(player_list, dim),
 			// else, delete all remaining markers, if there are any
-			if(global_markers, __remove_markers('overworld') )
+			if(global_markers, __remove_markers(dim) )
 		)
 	)
 );
 
 __on_tick() -> (
-	__do_on_tick();
+	__do_on_tick('overworld');
 );
 
 __on_tick_nether() -> (
-	__do_on_tick()
+	__do_on_tick('the_nether')
 );
 
 
