@@ -1,9 +1,11 @@
 __command() -> print('command');
 
-
+global_debug = false;
 global_range = 40;
-global_refresh_rate = 5;
-global_markers = m( l('nether', m()), l('overworld', m()) );
+global_refresh_rate = 3;
+global_markers = m( l('the_nether', m()), l('overworld', m()) );
+
+__debug_print(str) -> if(global_debug, print(str) );
 
 __put_marker(pos, dim) ->(
 	// Create marker at position and give it useful properties and a tag
@@ -16,6 +18,7 @@ __put_marker(pos, dim) ->(
 
 __update_markers(player_list, dim) -> (
 	// I'll use the keys of the map as a set
+	
 	poi_map = m();
 	// For each player, check nether portal pois areound them and put it's coords into the set
 	for(player_list, map(filter(poi(pos(_), global_range), (_~ 'nether_portal') == 0), poi_map:(_:2) = null) );
@@ -31,21 +34,24 @@ __update_markers(player_list, dim) -> (
 
 __remove_markers(dim) -> (
 	// look for all markers that are nether portal pois
-	marker_list = entity_selector('@e[tag=nether_poi_marker]');
+	marker_list = filter(entity_selector('@e[tag=nether_poi_marker]'), _~'dimension' == dim);
 	//and remove them
 	map(marker_list, modify(_, 'remove'));
 	global_markers:dim = m();
 );
 
 __do_on_tick(dim) -> (
-	if(!(tick_time%global_refresh_rate) && player('*'), 
+	if(!(tick_time()%global_refresh_rate) && player('*'), 
 		// check for players with ender eyes
+		__debug_print(str('Players in %s: %s', dim, player('*') ) );
 		player_list = filter(player('*'), query(_, 'holds', 'mainhand'):0 == 'ender_eye' || query(_, 'holds', 'offhand'):0 == 'ender_eye');
+		__debug_print( str('%s: %s', tick_time(), player_list) );
 		// if any players found
 		if(player_list, 
 			// then update markers around them
 			__update_markers(player_list, dim),
 			// else, delete all remaining markers, if there are any
+			__debug_print('No players found in ' + dim);
 			if(global_markers, __remove_markers(dim) )
 		)
 	)
