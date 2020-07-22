@@ -120,7 +120,7 @@ You can think of waves as goin into one direction and oscilating into another, b
 
 You can find the video breefly shocasing this right [here](https://youtu.be/9qSo_WL8Rok).
 
-### Circular waves (cwaves)
+#### Circular waves (cwaves)
 
 Please note the algorithm to generate these is not as refined as the ones for the other curves, so it's quite a bit heavier to excecute. It creates a wave along a circle (duh) with the wave plane being coplanar with the circle (planar waves) or perpendicular to the circle (transverse waves). You have the option to make a full circle or just a partial one, which means you have a total four functions: `cwaves_planar`, `cwaves_transverse`, `cwaves_planar_partial` and `cwaves_transverse_partial`. They have the following arguments:
 
@@ -136,7 +136,7 @@ Please note the algorithm to generate these is not as refined as the ones for th
 
 As usual, the bad video showcasing these things (plus a few tricks) can be found [here](https://youtu.be/gP_p0lJbOjc).
 
-### Stars
+#### Stars
 
 It defines a star by taking N points on an outer circle, N points on an inner circle, and connecting them with straingth lines. The parameters are:
 
@@ -150,8 +150,8 @@ Because the star is build by connecting points, if you set inner and outer radiu
 
 Here's a [video](https://www.youtube.com/watch?v=XT4XJngGZRM&t=4s) showing this functionality and some tricks.
 
-[1]: https://github.com/Firigion/scarpets#curves
-[2]: https://github.com/Firigion/scarpets#settings
+[1]: https://github.com/Firigion/scarpets#curves-1
+[2]: https://github.com/Firigion/scarpets#selections-and-position-setting
 [3]: https://github.com/Firigion/scarpets#help
 [4]: https://github.com/Firigion/scarpets#selection
 [5]: https://github.com/Firigion/scarpets#undo
