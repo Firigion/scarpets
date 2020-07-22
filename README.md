@@ -46,7 +46,7 @@ To use this app, put the .sc file int your scripts fodler and run `/script load 
 If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
 
 # Curves
-The curves app is a crateive mode-oriented script that includes a few commands to generate 3D curves of diferent types. To use it, put `curves.sc` into your `/scripts` folder in your wrold save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
+The curves app is a crateive mode-oriented script that includes a few commands to generate 3D curves of diferent types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/curves.sc) into your `/scripts` folder in your wrold save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
 
 The app includes four [shapes or curve types][1], has a [settings UI][2], a [help command][3], a way to make [selections][4] in-world and [undo][5] your actions. It also includes the [soft replace app][7]. 
 
@@ -116,7 +116,7 @@ Waves are defined by three parameters:
 * `amplitude`: how far from the baseline does one oscilation reach 
 * `size`: how many blocks does the wave fover in total
 
-You can think of waves as goin into one direction and oscilating into another, both of which are defined in the `wave_axis` setting. For example, a wave going into (positive) `x` oscilating up and down would have the default value of `xy`.
+You can think of waves as goin into one direction and oscilating into another, both of which are defined in the `wave_axis` setting. For example, a wave going into (positive) `x` oscilating up and down would have the default value of `xy`. Note: to have waves be symmetrical about the max and min point of each oscilation, the wavelength is actualy rounded to the nearest multiple of four. So when setting a wavelength, do know the actual value will be plus or minus two.
 
 You can find the video breefly shocasing this right [here](https://youtu.be/9qSo_WL8Rok).
 
