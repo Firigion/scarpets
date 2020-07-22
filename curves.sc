@@ -1,4 +1,4 @@
-__command() -> help();
+__command() -> null;
 
 // to store marker positions and object handles
 global_settings = {
@@ -772,7 +772,7 @@ __get_button(value, parameter) -> (
 );
 
 // generate interactive string for parameter with options
-__make_value_setting(parameter, hover, options) -> (
+__make_value_setting(parameter, hover, options, has_arbitrary_values) -> (
 	str_list = l(
 		str('w * %s: ', parameter), 
 		str('^y %s', hover),
@@ -784,7 +784,12 @@ __make_value_setting(parameter, hover, options) -> (
 			options_list:(len+1) = '^bg Click to set this value';
 			options_list:(len+2) = str('?/curves set_%s %s', parameter, _) 
 	);
-	print(player(), format( __extend(str_list, options_list) ))
+	str_list = __extend(str_list, options_list);
+	if( has_arbitrary_values, 
+		current_val = ['w \ | ', str('e %s', global_settings:parameter), '^e Current value'];
+		str_list = __extend(str_list, current_val) 
+	);
+	print(player(), format( str_list ))
 );
 
 // print all settings
@@ -794,13 +799,13 @@ settings() -> (
 	__make_toggle_setting('show_pos', 'Shows markers and outlines selection');
 	__make_toggle_setting('paste_with_air', 'Includes air when pasting template');
 	__make_toggle_setting('replace_block', 'Shapes will only be generated replacing block in offhand');
-	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', [20, 100, 1200] );
-	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', [10, 100, 500] );
-	__make_value_setting('max_operations_per_tick', 'Sets the maximum ammount of operations per gametick', [2000, 10000, 50000] );
+	__make_value_setting('max_template_size', 'Limits template size to avoid freezing the game if you mess up the selection', [20, 100, 1200] , true);
+	__make_value_setting('undo_history_size', 'Sets the maximum ammount of actions to undo', [10, 100, 500] , true);
+	__make_value_setting('max_operations_per_tick', 'Sets the maximum ammount of operations per gametick', [2000, 10000, 50000] , true);
 	print(player(), format( 'b Shapes settings:' ));
 	__make_toggle_setting('slope_mode', 'Defines behaviour of second argument in spiral definitions: slope or pitch');
-	__make_value_setting('circle_axis', 'Axis along which circular stuff is generated. Affects stars, spirals and cwaves', l('x', 'y', 'z') );
-	__make_value_setting('wave_axis', 'Axis along which and into which waves are generated', l('xy', 'xz', 'yx' ,'yz','zx', 'zy') );
+	__make_value_setting('circle_axis', 'Axis along which circular stuff is generated. Affects stars, spirals and cwaves', ['x', 'y', 'z'] , false);
+	__make_value_setting('wave_axis', 'Axis along which and into which waves are generated', ['xy', 'xz', 'yx' ,'yz','zx', 'zy'] , false);
 	print(player(), '');
 	return('')
 );
