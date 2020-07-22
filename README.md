@@ -45,63 +45,100 @@ To use this app, put the .sc file int your scripts fodler and run `/script load 
 
 If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
 
-# Spirals
-A nice app to make spirals with a few options. To use it, put `spirals.sc` in your scrpits folder and load it with `/script load spirals`. After that, all functions will be available with the command `/spirals`. If you can't access the scripts folder of your world save, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
+# Curves
+The curves app is a crateive mode-oriented script that includes a few commands to generate 3D curves of diferent types. To use it, put `curves.sc` into your `/scripts` folder in your wrold save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
 
-### Commands
-* `spiral`: takes radius, separation between cycles of the spiral, total height and material. It will produce a spiral centered around the player. For example, to make a stone spiral with radius 10 and step 5 that makes 10 total cycles to reacha  height of 50: `/spirals spiral 10 5 50 stone`. If you loaded with the command block, you'd do `/script run spiral(10, 5, 50, 'stone')`.
-* `antispiral`: the same as spiral, but it turns the other way.
-* `multispiral`: same as spiral, but takes one extra argument (before material) to decide how many spirals to draw.
-* `antimultispiral`: you know, like multi spiral, but anti.
+The app includes four [shapes or curve types][1], has a [settings UI][2], a [help command][3], a way to make [selections][4] in-world and [undo][5] your actions. It also includes the [soft replace app][7]. 
 
-You have the option to use a special material. If instead of a Minecraft block name you enter `template` as material, it will take in a template and copy it around to make the spiral. To select the template, grab a golden sword and use left and right click to define the area. Read about the replace app to see how to use it. If you don't want to stand in the place you want to be the center of the spiral, you can also define a center with the third position. To set it, shift right click with your sword where you want it to be (if you aren't looking at a block, it will be set at your feet).
+### Help
+
+This is pretty self-explanatory: run `curves help` and you will be presented with a clickable menu that lets you browse te information in this article in a more condensed way. There are also some category-specific help commands, which you can run by hand if you like, or just click your way to them. They are all called `help_<category_name>`, you can tab autocomplete them.
 
 ### Settings
-You also have a bunch of options to further customize your spiral making experience. To avoid cluttering the commands, these are done via settings. To access the settings menu run `settings`, and click your way through the options. Some of them are togglable and the corresponding command is `toggle_<option_name>`, some of them take an argument to set, which you can do with `set_<option_name> <value>`.
 
-Current settings available are:
-* `show_pos`: toggle to show/hide markers and box showing selection. Default: `true`.
-* `paste_with_air`: toggle to generate spiral from template counting or disregarding air. Default: `false`.
-* `replace_block`: toggle to generate complete spiral, or generate it only replacing certain block. Instead of using the block to replace as an argument, when this option is enabled, the app wil take whatever block you have in your offhand and replace that one. For stuff you can't easily get in item form, there are a few aliases: hold a feather to replace air, an eye of ender to replace end portals, a flint and steel to replace nether portals and the corresponding buckets for liquids. Default: `false`.
-* `slope_mode`: toggle between slope mode (value `true`) and pitch mode (value`false`). The second argument of the spiral making commands defines how fast the spiral grows. In pitch mode, the number represents the height diference between full revolutions of a spiral, while in slope mode, it represents how many blocks it should go up for every block moved horizontaly. You can use floats like 0.5 to move one block up every second horizontal block. Default: `false`.
-* `axis`: one of `x`, `y` and `z`. Defines the axis about which the spiral is generated. Default: `'y'`.
-* `max_template_size`: a safeguard to avoid using templates that would kill your game, because you misclicked the position selector. This limit counts the actual temaplte volume if `paste_with_air` is `true`, or only the non air blocks, if it's `false`, meaning you can still paste a very large very saprse tempalte. Default is a rather conservative value, you can increase it a bunch if you trust your computer's power. Default: `100`.
-* `undo_history_size`: sets the amount of stories the undo command saves, efectively defining how many mistakes you can fix. Default: `100`.
+This one is also simple: run `curves settings` and you will be presented with a clickable menu that lets you set all the settings in the curves app and shows the current values. When clicking a setting, a new command will be suggested. You can also type the setting commands by hand, they are called either `toggle_<setting>` or `set_<setting>`. All the settings for each aspect of the app will be listed under the description of that category, so go to [undo][5] to see the undo related settings, for example. The usage of settings is shocased [here](https://www.youtube.com/watch?v=Im9Do0zVg8w), but I think it's pretty self-explanatory.
+
+### Selections and position setting
+
+While most drawing commands in this app work fine placing a block along a curve, you will find it's also very useful to create a template that gets pasted along the curve, allowing for more complex and interesting shapes. A template is defined by a cuboid area selection determined by its two corners. To define those corners, grab a golden sword and right and left click on a block or in mid air. A faint white box will apprear once the selection is complete. Bare in mind that the templates are dimension specific, so if you try to make a selection in the overworld and go to the end to paste it, it will not work. 
+
+You will alos find all shapes have a center or origin. That block is usualy the players feet, but if you would like ot have a repeateble center position, or be able to watch the sahpe from afar when creating it, you can set your third position using shift and right click. All shapes will use that one as origin.
+
+You can erase all positions with `reset_pos` and query them with `get_pos` and, if for some reason you want to, you can set them via commands instead of with the golden sword. For that, just run `curves set_pos <i>`, where `<i>` should be either 1, 2 or 3, depending on the position you want to set. You can also toggle rendering of positions and selection on and off with the setting `toggle_show_pos`. If you need to see a video of this working for some reason, [here](https://youtu.be/o8xU7nN55jI) it is.
 
 ### Undo
-We have an `undo` command. It takes one argument defining how many steps back you want to go. To undo your last three spirals made , just use `undo 3`. Ez pz. Note that multispirals save to separate stories, so to completly undo a double spiral, you ened to use `undo 2`. 
 
-The undo functionality comes with one extra command: `go_to_story <number>`. This works like `undo`, but instead of undoing the last `<number>` actions, it skips all of them but the last one. So, if you made three spirals and do `go_to_story 3`, it will undo the first spiral you made. Bare in mind, this might have some odd behaviours, because all the `undo` functions do is paste back whatever the spiral replaced. So if you make a spiral, then replace some of it with another spiral and then undo only the first one, it will put back in place whatever *it* replcaed, cutting through the new spiral.
+All actions done with this app are saved into history. You can at any time undo any or all of them. To do so, you have two commands available: `undo <n>` and `go_back_stories <n>`, both of which take a number as a parameter. The first one will undo as many actions as requested, so `curves undo 4` will undo your last four actions. The second one is a bit more strange: `curves go_back_stories <n>` will skip your last 3 actions and undo only the thing you did 4 actions ago. Bare in mind, this might have some odd behaviours, because all the `undo` functions do is paste back whatever the action replaced. So if you make a spiral, then replace some of it with another spiral and then undo only the first one, it will put back in place whatever *it* replaced, cutting through the new spiral.
 
-### Videos
-Made a [video](https://youtu.be/WL9Pl3eaFaU) for all the functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E). Also made a third [video](https://youtu.be/o8xU7nN55jI) showing the shift + right click thing. After that I did a separate [video](https://www.youtube.com/watch?v=Im9Do0zVg8w) on some of the settings and [another one](https://www.youtube.com/watch?v=qeGa9eZy8PA) about the undo functions. I make them as i go, don't judge me.
+There is one setting pertinent to the `undo` functions, that set how many actios to save into history. It defautls to 100, but you can set ti to whatever you like with `set_undo_history_size <size>`. You can see this features being used in [this bad showcase video](https://www.youtube.com/watch?v=qeGa9eZy8PA) using spirals.
 
-# Waves
-A nice app to make waves with a few options. To use it, put `waves.sc` in your scrpits folder and load it with `/script load waves`. After that, all functions will be available with the command `/waves`. If you can't access the scripts folder of your world save, copy the contents of `spirals.mccmd` into a command block and power it. All functions will be available with `/script run <function_name>`.
+### Brush
 
-This app is a direct derivation of the spirals app, so most of the features and settings of that app are directly imported here, so go read about that to learn how to use it. The main difference is of course that the funtion to actualy draw the sapes is `wave`, instead of `spiral`. `waves` have four parameters: `wavelength`, `amplitude`, `size`, `material`. `size` defines how long (or tall, deoending on direction) the wave is going to be. Bare in mind that the actual size the wave is generated might be up to three blocks off of `size`. This was done this way to preserve the symmetricness (symmetricy?) of the curve.
+There is also an obscure and somewhat usless freature: if you click with a blaze rod, you will paste your template wherever you are looking, as far as the horizon reaches. Or 200 blocks, whatever comes first.
 
-Other than that, all of the settings are the same as in the spirals app, except for the `axis` one, which in this case has six options instead of three: `xy`, `xz`, `yx`, `yz`, `zx` and `zy`. In all of them, the first character indicates the axis along which the wave will be created, and the second one the axis _into_ which it will me created. So, `xy` makes a vertical wave going along the x axis.
+### Soft replace
 
-For a very short showcase, see [this video](https://youtu.be/9qSo_WL8Rok), or go watch the videos on spirals for extra info on how to use the tools.
+This is just a port of the [replace app][6] (which replaces one block with another, keeping the block properties) to the curves app, because it can be useful to edit the template and the selection method is the same. The only difference with how you operate it is that the commands are called `soft_replace`, which replaces the block in the off hand with the one in the main hand, and `soft_replace_filt <property> <value>`, which does the same, but only for blocks with a specific property-value pair.
 
-# Curves
-Curves combines **spirals**, **waves** and **replace** into one single app. All of them work basicaly the same, except for the fact that some settings are separated into categories and the replace commnands are now `/curves soft_replace` and `/curves soft_replace_filt <property> <value>`. The curves app also includes two new shapes, a 'help' command and a very simple brush (just make a selection and right click with a blaze rod). A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
+### Curves
+
+All the curves have about the same signature: `/curves <curve_name> <param1> <param2> ... <paramN> <material>`. Each curve type requires a different ammount of parameters and all take a material as last input. The material can either be any minecraft block name, or `'template'`. Some curve types also have a few variations, each one having its own command. For example, doing an anti multi spiral with radius 20, pitch 11, size 80 and 4 turns out of prismarine would look like 
+```/curves antimultispiral 20 11 80 4 prismarine``` 
+
+If at some point you don't know what parameters each shape needs, just run it without parameters and the error message will include the expected signature. There are a number of settings available for all shapes to share:
+
+* `paste_with_air`: when pasting a tempalte, this setting decides if said template includes or excludes air. Default: `false`.
+* `replace_block`: if enabled, generated curves will only be placed replacing the block you have in the off hand. For stuff you can't easily get in item form, there are a few aliases: hold a feather to replace air, an eye of ender to replace end portals, a flint and steel to replace nether portals and buckets for the corresponding liquids. Default: `false`.
+* `max_template_size`: a safeguard to avoid using templates that would kill your game, because you misclicked the position selector. This limit counts the actual temaplte volume if `paste_with_air` is `true`, or only the non air blocks, if it's `false`, meaning you can still paste a very large very saprse tempalte. Default is a rather conservative value, you can increase it a bunch if you trust your computer's power. Default: `100`.
+* `max_operations_per_tick`: limits the ammount of operations per tick, as it says in the name. This usualy is not needed, but for some slower systems or shapes that have an inefficient algorithm, not having this can be inconvinient. Default: 10000
+
+Other than those, all shapes have a "directio" in which they generate. For all circle-based curves (that's all of them, except for waves), `circle_axis` defines the axis perpendicular to the circle in question and defaults to `y`, and for waves, `wave_axis` defines the diretion along which and into which it generates, defaults into `yx`.
+
+#### Spirals
+
+Spirals are defined by three parameters: 
+
+* `radius`:	the circle radius,
+* `pitch`: the rate at which it grows. With the `slope_mode` setting you can make this setting be interpreted as slope, rather than pitch, the former being how many blocks per step the spiral advances, and the latter how many blocks per full revolution. Defalut values is `false`, meaning pitch mode.
+* `size`: the total size (if `circle_axis` is `y`, this would be total height, for example)
+
+`spirals` by default spin counterclockwise; to get a clockwise spiral, use `antispiral`. Both this commands have a variation in `multispiral` and `antimultispiral`, which create multiple spirals uniformly distributed along the circle. Both variations take a fourth parameter before material, it being how many spirals to generate. For example, to generate three concentric anticlockwise spirals out of the template with radius 30, pitch 11 and total 100 blocks, each 120 degrees away from the next:
+```
+/curves multispiral 30 11 100 3 template
+```
+I made some videos showcasing spirals. Since it was the frst curve I worked on, spiral development is entangled with the development of other fetures: [this video](https://youtu.be/WL9Pl3eaFaU) shows  all the functions, except multi spiral, which you can see in this [other video](https://youtu.be/sMGKnUiST6E).
+
+#### Waves
+
+Waves are defined by three parameters:
+
+* `wavelength`: how many blocks does it take the wave to complete a full oscilation
+* `amplitude`: how far from the baseline does one oscilation reach 
+* `size`: how many blocks does the wave fover in total
+
+You can think of waves as goin into one direction and oscilating into another, both of which are defined in the `wave_axis` setting. For example, a wave going into (positive) `x` oscilating up and down would have the default value of `xy`.
+
+You can find the video breefly shocasing this right [here](https://youtu.be/9qSo_WL8Rok).
 
 ### Circular waves (cwaves)
-Please note the algorithm to generate these is not as refined as the ones for spirals and waves, so it's quite a bit heavier to excecute. It creates a wave along a circle (duh) with the wave plane being coplanar with the circle (planar waves) or perpendicular to the circle (transverse waves). You have the option to make a full circle or just a partial one and, like always, these curves support template pasting, undo functionality and settings. It shares `axis` settings with spirals. The functions are simply called `cwaves_planar`, `cwaves_transverse`, `cwaves_planar_partial` and `cwaves_transverse_partial`. They have the following arguments:
+
+Please note the algorithm to generate these is not as refined as the ones for the other curves, so it's quite a bit heavier to excecute. It creates a wave along a circle (duh) with the wave plane being coplanar with the circle (planar waves) or perpendicular to the circle (transverse waves). You have the option to make a full circle or just a partial one, which means you have a total four functions: `cwaves_planar`, `cwaves_transverse`, `cwaves_planar_partial` and `cwaves_transverse_partial`. They have the following arguments:
 
 * `radius`: the radius of the circle
 * `amplitude`: the amplitude of the wave
 * `cycles`: ammount of cycles the wave does in one full turn of the circle. Whole numbers will mean the wave meets itself at the end, resulting in a closed curve. You can play around with non whole numbers for more interesting results.
 * `material`: material out of which the curve is made. Use `template` to create the wave using the selection.
 
-`partial` functions also have the `from` and `to` arguments, in degrees. Note you can make more than one full revolution. Having fractional `cycle`s and multiple turns makes for some interesting patterns. You can also use `from` as a phase value to rotate the shape by some ammount. Just make sure to set `to` to `from + 360` to have the whole shape be rotated.
+`partial` functions also have the `from` and `to` arguments, in degrees. Note you can make more than one full revolution. Having fractional `cycle`s and multiple turns makes for some interesting patterns. You can also use `from` as a phase value to rotate the shape by some ammount. Just make sure to set `to` to `from + 360` to have the whole shape be rotated, like so:
+```
+/curves cwaves_transverse_partial 40 8 10 45 405 white_stained_glass 
+```
 
 As usual, the bad video showcasing these things (plus a few tricks) can be found [here](https://youtu.be/gP_p0lJbOjc).
 
 ### Stars
-It defines an N pointed star with the command `/curves star`. It shares axis settings with spirals and cwaves, and defines a star by taking N points on an outer circle, N points on an inner circle, and connecting them with straingth lines. The parameters are:
+
+It defines a star by taking N points on an outer circle, N points on an inner circle, and connecting them with straingth lines. The parameters are:
 
 * `outer_radius`: radius of the outer circle.
 * `inner_radius`: radius of the inner circle.
@@ -113,3 +150,10 @@ Because the star is build by connecting points, if you set inner and outer radiu
 
 Here's a [video](https://www.youtube.com/watch?v=XT4XJngGZRM&t=4s) showing this functionality and some tricks.
 
+[1]: https://github.com/Firigion/scarpets#curves
+[2]: https://github.com/Firigion/scarpets#settings
+[3]: https://github.com/Firigion/scarpets#help
+[4]: https://github.com/Firigion/scarpets#selection
+[5]: https://github.com/Firigion/scarpets#undo
+[6]: https://github.com/Firigion/scarpets#replace
+[6]: https://github.com/Firigion/scarpets#soft_replace
