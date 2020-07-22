@@ -156,4 +156,4 @@ Here's a [video](https://www.youtube.com/watch?v=XT4XJngGZRM&t=4s) showing this 
 [4]: https://github.com/Firigion/scarpets#selection
 [5]: https://github.com/Firigion/scarpets#undo
 [6]: https://github.com/Firigion/scarpets#replace
-[6]: https://github.com/Firigion/scarpets#soft_replace
+[7]: https://github.com/Firigion/scarpets#soft_replace
