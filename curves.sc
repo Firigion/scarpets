@@ -1003,7 +1003,7 @@ __reset_positions('the_nether');
 __reset_positions('the_end');
 
 
-////// Handle Markers //////
+////// Help //////
 
 help() -> (
 	print(player(), '======================');
