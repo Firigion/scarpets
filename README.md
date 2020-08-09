@@ -45,6 +45,20 @@ To use this app, put the .sc file int your scripts fodler and run `/script load 
 
 If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
 
+# Cover
+
+Cover is a small utility mod oriented at createive mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) into your `/scripts` folder in your wrold save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings.
+
+To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block paris at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventoy. Blocks will only get palced replacing air.
+
+The app has two main modes: continuous and region. 
+
+In continuos mode, a box will follow the player, and every tick all blocks in the box that match one of the pairs will get covered. Toggle continuous mode on and off with `/cover continuous` and set the box size with `/cover set_size <dx> <dy> <dz>` and it's vertical offset from the player's feet with `/cover set_offset <y_offset>`. Defaults to `/cover set_size 20 8 20` and `/cover set_offset 3`.
+
+In region mode, you first make a selection to define the area to affect, and then cover the blocks with `/cover region`. To select the volume use an **iron sword** and right and left click to define the corners of the rectangle encompassing the region. Use `/cover reset_positions` to remove the selection.
+
+Both modes support an undo funtionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuos mode will record each successful tick as a separate action, so you might need to undo a lot of actions.
+
 # Curves
 The curves app is a crateive mode-oriented script that includes a few commands to generate 3D curves of diferent types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/curves.sc) into your `/scripts` folder in your wrold save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
 
