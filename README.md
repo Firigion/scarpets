@@ -45,6 +45,10 @@ To use this app, put the .sc file int your scripts fodler and run `/script load 
 
 If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
 
+# Stack potion effects
+
+Pretty much what it ways on the tin: when you drink a potion, intead of overriding the duration you had left for that same effect, it adds the potion length to the old one. To use it, put [stack_potion_effects.sc](https://github.com/Firigion/scarpets/blob/master/stack_potion_effects.sc) into your `/scripts` folder inside your world save. You might want to have this app automaticaly load when you launch your world or server. To do that, follow [these](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world#keeping-scripts-loaded) instructions.
+
 # Cover
 
 Cover is a small utility mod oriented at createive mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) into your `/scripts` folder in your wrold save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings.
