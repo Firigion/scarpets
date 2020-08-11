@@ -21,15 +21,28 @@ You can also query the distance between positions 1 and 2 via the `distance` com
 To set positions, grab a golden sword and left click, right clcik or shift right click on a block with it, to set positions 1, 2 and 3, respectively. You can also do it by running `/shapes set_position <number>`. A marker will appear in the block the player is looking at. If no block is within reach, the marker will appear at the layers feet (you can't left click ari, sadly). These markers are the positions the shapes will use as reference. You can also `get_pos()` to get the coordinates of all set positions and toggle the rendering of the markers with `show_pos(<true|false>)`. Note that while markers are not rendered, positions are still recorded and you can set them, the `draw` commands will. If you log out or something and markers are not deleted (it happens sometimes), run `/script run remove_all_markers()`.
 You can watch a video with some of the features [here](https://www.youtube.com/watch?v=F0MCtPvy46Q&t=3s), and another video with the rest of the features [here](https://www.youtube.com/watch?v=PMY4L_zKggc&t=12s). Sorry, I recorded during development, so this is not well ordered.
 
-# Replace
-To load, paste the code in `replace.mccmd` into a command block and power it. Then, all functions will be available through `/script run <function_name>`. This app adds two commands to replace blocks with some extra functionality: it will keep the block properties of the pasted block. This means, if you have a to spruce stair facing north, it will be replaced by a top sandstone stair facing north, and if you have a bich log in the z axis, it will be replaced by a striped sruce log in the z axis. 
+# Cover
 
-But I hear you ask, "how can I chose what blocks to replace with what blocks?". Easy: just hold the block to replace in the offhand and the block to replace it with in the main hand. Select the area you want to affect and run `/script run replace_volume()`. To select the area, you define a cuboid by its two corners with `/script run set_pos(<1|2>)`, just like the shapes app. I stole the area selection from there. I also upgraded it a bit by adding functionality to the golden sowrd: if you left click a block or in the air, you will set one position and if you attack a block, you will set the other. Sadly, you can't attack air. This only works when holding a golden sword. If you are in the nether, the once the two corners are defined, a cuboid will actualy render. Why only in the nether, you ask? Excelent question. If you wanna turn rendering of the markers and cuboid on/off, use `/script run toggle_show_pos()`.
+Cover is a small utility app oriented at createive mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) into your `/scripts` folder in your wrold save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings.
 
-After recording the [video](https://www.youtube.com/watch?v=_iWv2vvnj8o) I added another command, so it's not showcased there: you cna now filter by properties: for example, if you only wanna replace logs that are in the x axis, you hold the corresponding logs in main and offhand and run `/script run replace_volume_filt('axis', 'x')`. Remember to put properties and values in single quotes, even stuf like `'true'` and `'5'`.
+To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block paris at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventoy. Blocks will only get palced replacing air.
 
-### tl:dr
-Select positions with golden sword left and right click, or by using `/script run set_pos(<index>)` with `index` being 1 or 2. to replace blocks, run `/script run replace_volume()`, which will replace whatever block you ahve in the offhand with whatever block you have in the main hand, keeping the block properties of the replaced block, as long as they are somewhat compatible. You can filter for certain properties by using  `/script run replace_volume_filt(property, value)`.
+The app has two main modes: continuous and region. 
+
+In continuos mode, a box will follow the player, and every tick all blocks in the box that match one of the pairs will get covered. Toggle continuous mode on and off with `/cover continuous` and set the box size with `/cover set_size <dx> <dy> <dz>` and it's vertical offset from the player's feet with `/cover set_offset <y_offset>`. Defaults to `/cover set_size 20 8 20` and `/cover set_offset 3`.
+
+In region mode, you first make a selection to define the area to affect, and then cover the blocks with `/cover region`. To select the volume use an **iron sword** and right and left click to define the corners of the rectangle encompassing the region. Use `/cover reset_positions` to remove the selection.
+
+Both modes support an undo funtionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuos mode will record each successful tick as a separate action, so you might need to undo a lot of actions.
+
+# Soft Replace
+Soft replace is a small utility mod oriented at createive mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your wrold save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
+
+To do so, just hold the block you want to replace (diorite staris, in this case) in your offhand and the block you want to replace _with_ (birch stairs) in your main hand. Then, to select the area you want to affect, grab a **stone sword** and right and left click to select the corners of a rectangke defining the volume. Finaly, run `/soft_replace region` to excecute the operation.
+
+If you want to, say, replace only the top stairs with birch ones, but the bottom ones with sandstone, you can use `/soft_repalce region_filt <propery> <value>`, where in this case you'd replace `<property>` with `half` and `<property>` with `bottom`. This way you filter out only the blocks that have that propery set to that value.
+
+Here's a [video](https://www.youtube.com/watch?v=_iWv2vvnj8o) to showcase the app in action. I recorded it during develepment, so don't pay attention at how the commands are called or the fact that I use a golden sword instead of a stone one.
 
 # Nether portal POI display
 Super simple app that you load using `/script load poi_show_md gloabl`. For once, the app is fully compatible with multiplayer (and with mutiple players using it at the same time, in particular, which is the important part). To use it, jsut hold an eye of ender in your main or offhand. A marker will appear in every nether portal POI around you in a 40 block radious by default. You can change that value using `/poi_show_md set_range <range>`. Please be sensible about the settings, because I didn't add any checks when setting new values.
@@ -49,19 +62,6 @@ If for some reason you need a video to see this in action, [here](https://youtu.
 
 Pretty much what it ways on the tin: when you drink a potion, intead of overriding the duration you had left for that same effect, it adds the potion length to the old one. To use it, put [stack_potion_effects.sc](https://github.com/Firigion/scarpets/blob/master/stack_potion_effects.sc) into your `/scripts` folder inside your world save. You might want to have this app automaticaly load when you launch your world or server. To do that, follow [these](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world#keeping-scripts-loaded) instructions.
 
-# Cover
-
-Cover is a small utility mod oriented at createive mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) into your `/scripts` folder in your wrold save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings.
-
-To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block paris at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventoy. Blocks will only get palced replacing air.
-
-The app has two main modes: continuous and region. 
-
-In continuos mode, a box will follow the player, and every tick all blocks in the box that match one of the pairs will get covered. Toggle continuous mode on and off with `/cover continuous` and set the box size with `/cover set_size <dx> <dy> <dz>` and it's vertical offset from the player's feet with `/cover set_offset <y_offset>`. Defaults to `/cover set_size 20 8 20` and `/cover set_offset 3`.
-
-In region mode, you first make a selection to define the area to affect, and then cover the blocks with `/cover region`. To select the volume use an **iron sword** and right and left click to define the corners of the rectangle encompassing the region. Use `/cover reset_positions` to remove the selection.
-
-Both modes support an undo funtionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuos mode will record each successful tick as a separate action, so you might need to undo a lot of actions.
 
 # Curves
 The curves app is a crateive mode-oriented script that includes a few commands to generate 3D curves of diferent types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/curves.sc) into your `/scripts` folder in your wrold save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
