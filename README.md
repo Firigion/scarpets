@@ -27,9 +27,11 @@ Cover is a small utility app oriented at createive mode decoration. To use it, p
 
 To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block paris at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventoy. Blocks will only get palced replacing air.
 
-The app has two main modes: continuous and region. 
+The app has three main modes: continuous, sphere and region. 
 
 In continuos mode, a box will follow the player, and every tick all blocks in the box that match one of the pairs will get covered. Toggle continuous mode on and off with `/cover continuous` and set the box size with `/cover set_size <dx> <dy> <dz>` and it's vertical offset from the player's feet with `/cover set_offset <y_offset>`. Defaults to `/cover set_size 20 8 20` and `/cover set_offset 3`.
+
+In shpere mode, you just need to run `/cover shpere <radius>`, where `<radius>` should be the radius of the decires sphere, as you'd imagine.
 
 In region mode, you first make a selection to define the area to affect, and then cover the blocks with `/cover region`. To select the volume use an **iron sword** and right and left click to define the corners of the rectangle encompassing the region. Use `/cover reset_positions` to remove the selection.
 
