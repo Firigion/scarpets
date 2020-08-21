@@ -6,9 +6,10 @@ __help() -> (
 	print(format('b Welcome to the cover app'));
 
 	print(p, 'Cover x block with y block.');
-	print(p, 'There are two modes available: continuous and region.');
+	print(p, 'There are three modes available: continuous, region and sphere.');
 	print(p, 'To select the region to affect right and left click with an iron sword to slect corners of the volume. Use /curves reset_positions to erase selection.');
 	print(p, 'To define size of box around player in continuous mode, use /cover set_size and /cover set_offset. Toggle on or off with /cover continuous. ');
+	print(p, 'To use sphere mode, simply run /cover sphere r, where r is the decired radius.');
 	print(p, 'Place block to cover in offhand and block to cover with in main hand.');
 	print(p, 'To create a list of block pairs, put s hulker box in each hand. Items in corresponding slots will make cover pairs.');
 	print(p, 'Undo the last n actions you did with /cover undo n. Use big numbers for continuos mode.');
@@ -28,7 +29,7 @@ __make_pairs(player) -> (
 		//if both are shulkers, look at the contents
 		__make_shulker_pairs(mainhand:2, offhand:2),
 		//else look at the items themselves
-		global_pairs = {offhand:0 -> mainhand:0}
+		global_pairs = {offhand:0 -> __process_special_cases(mainhand:0)}
 	);
 );
 
@@ -38,7 +39,7 @@ __make_shulker_pairs(mainhand_data, offhand_data) -> (
 
 	global_pairs = {};
 	loop( 27,
-		if(mainhand_list:_ != null, global_pairs:(offhand_list:_) = mainhand_list:_ ) 
+		if(mainhand_list:_ != null, global_pairs:(offhand_list:_) = __process_special_cases(mainhand_list:_) ) 
 	);
 );
 
@@ -51,6 +52,24 @@ __get_item_list(box_data) -> (
 		item_list:(_:'Slot') = _:'id' - 'minecraft:'
 	);
 	return(item_list)
+);
+
+// Uses lists of lists in case some block needs more properties
+global_special_cases = {
+	'_button' -> [['face', 'floor']],
+	'sea_pickle' -> [['waterlogged', 'false']],	
+};
+__process_special_cases(block_name) -> (
+	for(keys(global_special_cases), if(block_name~_, key = _) );
+	// if block_name was in keys
+	print(key);
+	if(key,
+		// parse properties
+		props_str = join(',', map(global_special_cases:key, str('%s="%s"', _:0, _:1)) );
+		return( block(str('%s[%s]', block_name, props_str)) ),
+		//else, return the block
+		return(block_name)
+	);
 );
 
 
@@ -243,6 +262,32 @@ __reset_positions('overworld');
 __reset_positions('the_nether');
 __reset_positions('the_end');
 
+
+////// Sphere mode
+
+shpere(radius) -> (
+	p = player();
+	__make_pairs(p);
+	task('__cover_sphere', p, radius);
+	return('');
+);
+
+__cover_sphere(player, radius) -> (
+	dim = player ~ 'dimension';
+	center = player~'pos';
+	global_this_story = [];
+
+	print(player, 'Covering...');
+	result = scan(
+		center, radius, radius, radius,
+		if(__sq_distance(center, pos(_))<= radius*radius, __place_if(_))  
+	);
+	print(player, 'Covered ' + result  + ' blocks');
+
+	__put_into_history(global_this_story, dim);
+);
+
+__sq_distance(p1, p2) -> reduce(p1-p2, _a+_*_, 0);
 
 ////// Undo
 
