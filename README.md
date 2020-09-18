@@ -23,11 +23,11 @@ You can watch a video with some of the features [here](https://www.youtube.com/w
 
 # Cover
 
-Cover is a small utility app oriented at createive mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) into your `/scripts` folder in your wrold save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings.
+Cover is a small utility app oriented at createive mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) into your `/scripts` folder in your wrold save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings. It can also generate random patterns from a block pool.
 
-To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block paris at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventoy. Blocks will only get palced replacing air.
+To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block paris at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventoy. Blocks will only get placed replacing air.
 
-The app has three main modes: continuous, sphere and region. 
+The app has four main modes: continuous, sphere, region and random. 
 
 In continuos mode, a box will follow the player, and every tick all blocks in the box that match one of the pairs will get covered. Toggle continuous mode on and off with `/cover continuous` and set the box size with `/cover set_size <dx> <dy> <dz>` and it's vertical offset from the player's feet with `/cover set_offset <y_offset>`. Defaults to `/cover set_size 20 8 20` and `/cover set_offset 3`.
 
@@ -35,9 +35,20 @@ In shpere mode, you just need to run `/cover shpere <radius>`, where `<radius>` 
 
 In region mode, you first make a selection to define the area to affect, and then cover the blocks with `/cover region`. To select the volume use an **iron sword** and right and left click to define the corners of the rectangle encompassing the region. Use `/cover reset_positions` to remove the selection.
 
+Random mdoe uses the same selection as region mode. It uses the items in a shulker box in the main hand to generate a pool of random blocks to palce. To alter the weight of each item, just occupy more slots in the box with that item. If your offhand is empty, it will just fill the whole region. If has an item or shulker box, the items in the box will act as a filter and blocks will only be palced on blocks matching the items. You can run it with `/cover random` or `/cover random_cover`, the latter being varsion with slightly different behaviour, making it more symilar to the cover functions.
+
+To use blocks like air or liquids, there are some aliases: 
+```
+water bucket -> water
+lava bucket -> lava
+feather -> air
+ender_eye -> end_portal
+flint_and_steel -> nether_portal
+```
+
 Both modes support an undo funtionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuos mode will record each successful tick as a separate action, so you might need to undo a lot of actions. 
 
-The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it whocases all the things described above plus a nice trick you can use thi for.
+The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it shocases most things described above plus a nice trick you can use this for. The shpere and random modes are shocase [here](https://youtu.be/iUyGJdmje8U).
 
 # Soft Replace
 Soft replace is a small utility mod oriented at createive mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your wrold save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
