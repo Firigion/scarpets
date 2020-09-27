@@ -1,5 +1,7 @@
 __command() -> null;
 
+global_tool = 'stone_sword';
+
 /////// Replace stuff
 
 __get_states(b) -> (
@@ -38,8 +40,8 @@ region() -> (
 	to_replace = query(p, 'holds', 'offhand'):0;
 	replace_with = query(p, 'holds', 'mainhand'):0;
 
-	if(!global_all_set:dim, return('Missing positions. Set two positions before replacing.'));
-
+	if(!global_all_set:dim, __error(p,'Missing positions. Set two positions before replacing.'); return(''));
+	
 	print(str('Replacing %s with %s', to_replace, replace_with));
 	volume(global_positions:dim:0, global_positions:dim:1,
 			__replace_one_block(_, to_replace, replace_with)
@@ -52,15 +54,61 @@ region_filt(property, value) -> (
 	to_replace = query(p, 'holds', 'offhand'):0;
 	replace_with = query(p, 'holds', 'mainhand'):0;
 
-	if(!global_all_set:dim, return('Missing positions. Set two positions before replacing.'));
-
+	if(!global_all_set:dim, __error(p,'Missing positions. Set two positions before replacing.'); return(''));
+	
 	print(str('Replacing %s with %s', to_replace, replace_with));
 	volume(global_positions:dim:0, global_positions:dim:1,
 			__replace_one_block_filt(_, to_replace, replace_with, property, value)
 	);
 );
 
+
+/////// Hoolowifier
+
+// replaces interior with air
+hollowify() -> (
+	p = player();
+	dim = p ~ 'dimension';
+
+	if(!global_all_set:dim, __error(p,'Missing positions. Set two positions before replacing.'); return(''));
+
+	list_to_fill = [];
+	// replace interior with barrier blocks
+	volume(global_positions:dim:0, global_positions:dim:1,
+		if( all(neighbours(_), !air(_)),list_to_fill:length(list_to_fill) = _) 
+	);
+	// fill with air
+	for(list_to_fill, set(_, 'air') );
+);
+
+// replaces interior with given block
+hollowify_replace() -> (
+	p = player();
+	dim = p ~ 'dimension';
+	if(!global_all_set:dim, __error(p,'Missing positions. Set two positions before replacing.'); return(''));
+	
+	to_replace = query(p, 'holds', 'offhand'):0;
+	replace_with = query(p, 'holds', 'mainhand'):0;
+	if(replace_with==null, __error(p, 'Need a block to replace with in main hand'); return(''));
+
+	list_to_fill = [];
+	// replace interior with barrier blocks
+	if(to_replace==null, 
+		volume(global_positions:dim:0, global_positions:dim:1,
+			if( all(neighbours(_), !air(_)),list_to_fill:length(list_to_fill) = _) 
+		),
+		volume(global_positions:dim:0, global_positions:dim:1,
+			if( all(neighbours(_), _==to_replace) && _==to_replace, list_to_fill:length(list_to_fill) = _) 
+		)
+	);
+	// fill with block
+	for(list_to_fill, set(_, replace_with) );
+);
+
+
 /////// Markers stuff
+
+__error(player, msg) -> print(player, format('rb Error: ', str('y %s', msg)));
 
 
 // Spawn a marker
@@ -115,14 +163,14 @@ reset_positions() -> (
 
 // set position 1 if player left clicks with a stone sword
 __on_player_clicks_block(player, block, face) -> (
-	if(query(player(), 'holds'):0 == 'stone_sword',
+	if(query(player(), 'holds'):0 == global_tool,
 		__set_pos(1);
 	);
 );
 
 // set position 2 if player right clicks with a stone sword
 __on_player_uses_item(player, item_tuple, hand) -> (
-	if(item_tuple:0 == 'stone_sword' && hand == 'mainhand',
+	if(item_tuple:0 == global_tool && hand == 'mainhand',
 		__set_pos(2)
 	);
 );
