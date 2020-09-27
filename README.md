@@ -51,13 +51,18 @@ Both modes support an undo funtionality, read [this](https://github.com/Firigion
 The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it shocases most things described above plus a nice trick you can use this for. The shpere and random modes are shocase [here](https://youtu.be/iUyGJdmje8U).
 
 # Soft Replace
-Soft replace is a small utility mod oriented at createive mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your wrold save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
+Soft replace is a small utility app oriented at createive mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your world save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
 
 To do so, just hold the block you want to replace (diorite staris, in this case) in your offhand and the block you want to replace _with_ (birch stairs) in your main hand. Then, to select the area you want to affect, grab a **stone sword** and right and left click to select the corners of a rectangke defining the volume. Finaly, run `/soft_replace region` to excecute the operation.
 
 If you want to, say, replace only the top stairs with birch ones, but the bottom ones with sandstone, you can use `/soft_repalce region_filt <propery> <value>`, where in this case you'd replace `<property>` with `half` and `<property>` with `bottom`. This way you filter out only the blocks that have that propery set to that value.
 
 Here's a [video](https://www.youtube.com/watch?v=_iWv2vvnj8o) to showcase the app in action. I recorded it during develepment, so don't pay attention at how the commands are called or the fact that I use a golden sword instead of a stone one.
+
+### Hollowify
+I added an extra bit to let you hollow you creations, because I don't know how to keep myself from bundilng a bunch of stuff in the same app. `hollowify` will replace the interior of a structure within the selected region with air, where interior is defined as "anything not touching air". `hollowify_replace` will do the same, but replace it with the block in the main hand, instead of air. If you also put a block in your off hand, only the blocks matching that will be counted as "interior" blocks and get replaced.
+
+If the description is too confusing, watch [this video](https://youtu.be/pdL9AKlZypc) showcasing how it works. Probably the worst showcase in this whole repo.
 
 # Nether portal POI display
 Super simple app that you load using `/script load poi_show_md gloabl`. For once, the app is fully compatible with multiplayer (and with mutiple players using it at the same time, in particular, which is the important part). To use it, jsut hold an eye of ender in your main or offhand. A marker will appear in every nether portal POI around you in a 40 block radious by default. You can change that value using `/poi_show_md set_range <range>`. Please be sensible about the settings, because I didn't add any checks when setting new values.
