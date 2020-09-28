@@ -46,7 +46,9 @@ ender_eye -> end_portal
 flint_and_steel -> nether_portal
 ```
 
-Both modes support an undo funtionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuos mode will record each successful tick as a separate action, so you might need to undo a lot of actions. 
+You can toggle between asynchonous behaviour and synchronous behaviour for all functions except continuous mode using `toggle_parallel`. The former is the default and will run all commands in a separate thread, which will result in a slower excecution of the command, but it should not lag the game at all. If you are running something on a large area, be patient, it _is_ running, even if the MSPT didn't jump. The latter forces the game to run the commands synchronously, which will force the game to do stuff as fast as it can, but for larger regions, that might mean a very larg lag spike and temporarily freezing the game. Use wiht care. You can only do one job at a time. Continuous mode always runs in synch.
+
+All modes support an undo funtionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuos mode will record each successful tick as a separate action, so you might need to undo a lot of actions. 
 
 The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it shocases most things described above plus a nice trick you can use this for. The shpere and random modes are shocase [here](https://youtu.be/iUyGJdmje8U).
 
