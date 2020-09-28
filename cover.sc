@@ -36,6 +36,7 @@ __help() -> (
 	print(p, '' );
 );
 
+
 ////// Make pairs
 
 __make_pairs(player) -> (
@@ -48,6 +49,11 @@ __make_pairs(player) -> (
 		//else look at the items themselves
 		global_pairs = {__process_alias(offhand:0) -> __process_special_cases(__process_alias(mainhand:0))}
 	);
+	if(offhand==null, 
+		__place_fun(block) -> __place_default_if(block),
+		__place_fun(block) -> __place_if(block)
+	);
+	for(values(global_pairs), __test_blocks(_));
 );
 
 __make_shulker_pairs(mainhand_data, offhand_data) -> (
@@ -102,7 +108,6 @@ global_special_cases = {
 __process_special_cases(block_name) -> (
 	for(keys(global_special_cases), if(block_name~_, key = _) );
 	// if block_name was in keys
-	print(key);
 	if(key,
 		// parse properties
 		props_str = join(',', map(global_special_cases:key, str('%s="%s"', _:0, _:1)) );
@@ -114,6 +119,7 @@ __process_special_cases(block_name) -> (
 
 
 ////// Genearl utils
+__error(player, msg) -> print(player, format('rb Error: ', str('y %s', msg)));
 
 __set_and_save(pos, material) -> ( //defaults to no replace
 	global_this_story:length(global_this_story) = [pos, block(pos)];
@@ -128,6 +134,13 @@ __place_if(block) -> (
 	);
 );
 
+__place_default_if(block) -> (
+	block_to_place = global_pairs:null;
+	p = pos(block) + [0,1,0];
+	if(air(p) && __check(block) && block!=block_to_place && !air(block), __set_and_save(p, block_to_place));
+);
+		
+
 __check(block) -> (
 	if(	
 		block ~ '_slab', return(property(block, 'type')=='top'),
@@ -135,6 +148,15 @@ __check(block) -> (
 		// for any other block, true
 		return(true)
 	)
+);
+
+__test_blocks(to_place) -> (
+	pos = [0, 0, 0];
+	b = block(pos);
+	without_updates(
+		set(pos, to_place);
+		set(pos, b)
+	);	
 );
 
 ////// Continuous mode
@@ -151,7 +173,7 @@ __draw_box(player) -> (
 	pos = player ~ 'pos';
 	from = global_box_halfsize  + 0.5 - [0, global_box_offset + global_box_halfsize:1 -0.5 , 0];
 	to = -1 * global_box_halfsize - 0.5- [0, global_box_offset + global_box_halfsize:1, 0];
-	draw_shape('box', 2, 'color', 0x059915F0, 'fill', 0x05991550, 'from', from, 'to', to, 'follow', player)
+	draw_shape('box', 3, 'color', 0x059915F0, 'fill', 0x05991550, 'from', from, 'to', to, 'follow', player)
 );
 
 global_continous_on = false;
@@ -171,7 +193,7 @@ continuous() -> (
 __cover_player(player, dim) -> (
 	if(global_continous_on,
 		global_this_story = [];
-		result = scan( pos(player) - [0, global_box_offset + global_box_halfsize:1, 0], global_box_halfsize, __place_if(_));
+		result = scan( pos(player) - [0, global_box_offset + global_box_halfsize:1, 0], global_box_halfsize, __place_fun(_));
 		if(result, __put_into_history(global_this_story, dim) );
 
 		__draw_box(player);
@@ -193,26 +215,43 @@ __on_player_dies(player) -> global_continous_on = false;
 
 ////// Volume mode
 
+global_job_pending = false;
+global_parallel = true;
+
+toggle_parallel() -> (
+	p = player();
+	global_parallel = !global_parallel;
+	if(global_parallel, 
+		print(p, 'Stuff will run in a separate thread, which will posibly take longer to run.');
+		print(p, 'Be patient if running a very big area.'),
+		//else
+		print(p, 'The game will try to cover as fast as possible, which might result in a lag spike when doing a very large region.')
+	);
+	return('')
+);
+
 region() -> (
 	p = player();
-	__make_pairs(p);
+	dim = p ~ 'dimension';
 	
-	if(global_all_set,
-		task('__cover_region', p),
-		print(format('rb Error: ', 'y You must select a region to cover first. Use an iron sword.') );
-	);
+	if(!global_all_set:dim, __error(p, 'You must select a region to cover first. Use an iron sword.'); return(''));
+	__make_pairs(p);
+	if(global_job_pending, __error(p, 'You are currently running something. Wait until it\'s done.'); return(''));
+	if(global_parallel, task('__cover_region', p), call('__cover_region', p) );
 	return('');
 );
 
 __cover_region(player) -> (
+	global_job_pending = true;
 	dim = player ~ 'dimension';
 	global_this_story = [];
-
+		
 	print(player, 'Covering...');
-	result = volume(global_positions:dim:0, global_positions:dim:1, __place_if(_));
+	result = volume(global_positions:dim:0, global_positions:dim:1, __place_fun(_));
 	print(player, 'Covered ' + result  + ' blocks');
 
 	__put_into_history(global_this_story, dim);
+	global_job_pending = false;
 );
 
 // Spawn a marker
@@ -290,7 +329,7 @@ __render_box() -> (
 		min_pos = map(range(3), min(global_positions:dim:0:_, global_positions:dim:1:_));
 		max_pos = map(range(3), max(global_positions:dim:0:_, global_positions:dim:1:_));
 		draw_shape('box', 6, 'color', 0xFFFFFF70 , 'fill', 0xFFFFFF20, 'from', min_pos, 'to', max_pos+1 );
-		schedule(5, '__render_box')
+		schedule(7, '__render_box')
 	);
 );
 
@@ -308,29 +347,53 @@ __reset_positions('the_end');
 // builds off of volume mode's selection
 
 random() -> (
-	[mainhand_list, offhand_map] = __random_prepair();
-	task('__random_place', player(), mainhand_list, offhand_map, 'fill'),
+	p = player();
+	
+	dim = p ~ 'dimension';
+	if(!global_all_set:dim, __error(p, 'You must select a region to cover first. Use an iron sword.'); return(''));
+
+	[mainhand_list, offhand_map] = __random_prepair(p);
+	if(!mainhand_list, __error(p, 'Need an initialized shulker to make a random pattern.'); return(''));
+	
+	if(global_job_pending, __error(p, 'You are currently running something. Wait until it\'s done.'); return(''));
+	if(global_parallel, 
+		task('__random_place', player(), mainhand_list, offhand_map, 'fill'), 
+		call('__random_place', player(), mainhand_list, offhand_map, 'fill')
+	);
+	return('');
 );
 
 
 random_cover() -> (
-	[mainhand_list, offhand_map] = __random_prepair();
-	task('__random_place', player(), mainhand_list, offhand_map, 'cover'),
+	p = player();
+	
+	dim = p ~ 'dimension';
+	if(!global_all_set:dim, __error(p, 'You must select a region to cover first. Use an iron sword.'); return(''));
+
+	[mainhand_list, offhand_map] = __random_prepair(p);
+	if(!mainhand_list, __error(p, 'Need an initialized shulker to make a random pattern.'); return(''));
+	
+	if(global_job_pending, __error(p, 'You are currently running something. Wait until it\'s done.'); return(''));
+	if(global_parallel, 
+		task('__random_place', player(), mainhand_list, offhand_map, 'cover'), 
+		call('__random_place', player(), mainhand_list, offhand_map, 'cover')
+	);
+	return('');
 );
 
-__random_prepair() -> (
-	p = player();
+__random_prepair(p) -> (
 	mainhand = query(p, 'holds', 'mainhand');
 	offhand = query(p, 'holds', 'offhand');
 
 	// return if mainhand is not a box
 	if(!(mainhand:0~'shulker_box') || !	mainhand:2, 
-		print(format('rb Error: ', 'y Need an initialized shulker to make a random pattern.'));
-		return('')
+		return([false, null])
 	);
 	
 	// get all the non empty slots
 	mainhand_list = map(__get_item_list(mainhand:2), if(_, _, continue()));
+	for(mainhand_list, __test_blocks(_));
+	
 	offhand_map = {};
 
 	if(offhand,
@@ -348,14 +411,9 @@ __random_place(player, mainhand_list, offhand_map, mode) -> (
 	dim = player ~ 'dimension';
 	global_this_story = [];
 	len = length(mainhand_list);
-	print(offhand_map);
-
-	if(!global_all_set,
-		print(format('rb Error: ', 'y You must select a region to randomize first. Use an iron sword.') );
-		return('');
-	);
-
+	
 	print(player, 'Randomizing...');
+	global_job_pending = true;
 	if(mode=='fill',
 		if(offhand_map,
 			// place only over items in the map
@@ -387,18 +445,23 @@ __random_place(player, mainhand_list, offhand_map, mode) -> (
 	print(player, 'Placed ' + result  + ' blocks');
 
 	__put_into_history(global_this_story, dim);
+	global_job_pending = false;
 );
 
 ////// Sphere mode
 
-shpere(radius) -> (
+sphere(radius) -> (
 	p = player();
 	__make_pairs(p);
-	task('__cover_sphere', p, radius);
+	
+	if(global_job_pending, __error(p, 'You are currently running something. Wait until it\'s done.'); return(''));
+	if(global_parallel, task('__cover_sphere', p, radius), call('__cover_sphere', p, radius) );
 	return('');
 );
 
 __cover_sphere(player, radius) -> (
+	global_job_pending = true;
+
 	dim = player ~ 'dimension';
 	center = player~'pos';
 	global_this_story = [];
@@ -406,11 +469,13 @@ __cover_sphere(player, radius) -> (
 	print(player, 'Covering...');
 	result = scan(
 		center, radius, radius, radius,
-		if(__sq_distance(center, pos(_))<= radius*radius, __place_if(_))  
+		if(__sq_distance(center, pos(_))<= radius*radius, __place_fun(_))  
 	);
 	print(player, 'Covered ' + result  + ' blocks');
 
 	__put_into_history(global_this_story, dim);
+	
+	global_job_pending = false;
 );
 
 __sq_distance(p1, p2) -> reduce(p1-p2, _a+_*_, 0);
@@ -443,18 +508,19 @@ __undo(index, dim) -> (
 );
 
 undo(num) -> (
-	//check for valid input
-	if( type(num) != 'number' || num <= 0, 
-		print(format('rb Error: ', 'y Need a positive number of steps to undo'));
-		return('')
-	);
 
 	p = player();
 	dim = p ~ 'dimension';
+
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		__error(p, 'Need a positive number of steps to undo');
+		return('')
+	);
 	
 	index = length(global_history:dim)-num;
 	if(index<0, 
-		print(format('rb Error: ', str('y You only have %d actions to undo available', length(global_history:dim) ) )),
+		__error(p, str('You only have %d actions to undo available', length(global_history:dim) ) ),
 		task('__undo_asynch', num, length(global_history:dim)-1, dim, p )
 	);
 	return('')	
