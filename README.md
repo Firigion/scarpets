@@ -188,7 +188,21 @@ It defines a star by taking N points on an outer circle, N points on an inner ci
 
 Because the star is build by connecting points, if you set inner and outer radius to the same value, you will get a polygon of 2N sides. Also, 2 and 3 pointed stars are not a thing, but they make good rhombi and triangle/iregular hexagon tools.
 
-Here's a [video](https://www.youtube.com/watch?v=XT4XJngGZRM&t=4s) showing this functionality and some tricks.
+Here's a [video](https://www.youtube.com/watch?v=XT4XJngGZRM) showing this functionality and some tricks.
+
+#### Polygons
+
+It defines a polygon by taking N points on an circle and connecting them with straingth lines. The parameters are:
+
+* `radius`: radius of the outer circle.
+* `n_points`: the ammount of points in the star.
+* `rotation`: a phase or rotation, so that you can point your polygons in any direction you want.
+* `material`: material out of which the curve is made. Use `template` to create the star using the selection.
+
+Did I shamelesly copy this description from the stars one? yes. But they are basicaly the same. You can make odd-sided (regular) polygons with this.
+
+Here's a [video](https://youtu.be/HCePbkaB8Vk) showing this functionality.
+
 
 [1]: https://github.com/Firigion/scarpets#curves-1
 [2]: https://github.com/Firigion/scarpets#selections-and-position-setting
