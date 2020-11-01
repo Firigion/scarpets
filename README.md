@@ -13,13 +13,14 @@ To load it either run `/script load shapes` or paste the code inside `shapes.mcc
 * **Ring**: it will draw the ring (thicc circle) passing through the three defined points. This is the reason I made this script for: do you know how hard it is to draw circles in any orientation in three dimensional space freehand? `width` will increase width of the shape in all directions, not only radialy.
 * **Disc**: like ring, but full.
 * **Line**: it's like intersecting two planes. Literaly, that's how it's done in the app. Line will only use the positions 1 and 2 to draw, ignoring position 3.
-* **Fast line**: this is an alternative line algorithm. It's way faster for verly big lines, so if you need to draw a 200 block line, use this. It might even work into unloaded chunks, not sure. Downside is, the `width` paremeter does nothing. I kept it to keep the signatures of all shapes even.
+* **Fast line**: this is an alternative line algorithm. It's way faster for very big lines, so if you need to draw a 200 block line, use this. It might even work into unloaded chunks, not sure. Downside is, the `width` paremeter does nothing. I kept it to keep the signatures of all shapes even.
 
-You can also query the distance between positions 1 and 2 via the `distance` command.
+There's an extra line feature that creates a stright line from position 1 and into the direction the player is looking. The signature is `line_sight(length, material)`. You can also query the distance between positions 1 and 2 via the `distance` command and delete connected regions by clicking them with a snowball.
 
 ### Positions
 To set positions, grab a golden sword and left click, right clcik or shift right click on a block with it, to set positions 1, 2 and 3, respectively. You can also do it by running `/shapes set_position <number>`. A marker will appear in the block the player is looking at. If no block is within reach, the marker will appear at the layers feet (you can't left click ari, sadly). These markers are the positions the shapes will use as reference. You can also `get_pos()` to get the coordinates of all set positions and toggle the rendering of the markers with `show_pos(<true|false>)`. Note that while markers are not rendered, positions are still recorded and you can set them, the `draw` commands will. If you log out or something and markers are not deleted (it happens sometimes), run `/script run remove_all_markers()`.
-You can watch a video with some of the features [here](https://www.youtube.com/watch?v=F0MCtPvy46Q&t=3s), and another video with the rest of the features [here](https://www.youtube.com/watch?v=PMY4L_zKggc&t=12s). Sorry, I recorded during development, so this is not well ordered.
+
+You can watch a video with some of the features [here](https://www.youtube.com/watch?v=F0MCtPvy46Q&t=3s), and another video with the rest of the features [here](https://www.youtube.com/watch?v=PMY4L_zKggc&t=12s). The snowball and straight lines are featured in [this "bulding a tetrahedon" video](https://youtu.be/iTFD0bVmLQk). Sorry, I recorded during development, so this is not well ordered.
 
 # Cover
 
