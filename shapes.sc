@@ -1,7 +1,11 @@
-__command() -> null;
+__command() -> print(player(), str('Use a %s to set positions, use the draw commands to draw shapes, and distance to querry distance between positions 1 and 2. You can throw a snow ball to erase a connected object.', global_tool));
 
 global_debug = false;
 global_show_pos = true;
+global_tool = 'golden_sword';
+
+
+/////// Utilities ////////
 
 __dot_prod(l1, l2) -> (
 	reduce(l1 * l2, _a + _, 0)
@@ -20,6 +24,9 @@ __cross_prod(l1, l2) -> (
 __norm(list) -> (
 	sqrt(__dot_prod(list, list));
 );
+
+
+_sq_distance(a, b) -> reduce(a-b, _a + _*_, 0);
 
 
 __normalize(list) -> (
@@ -60,6 +67,15 @@ __circ(p1, p2, p3) -> (
 );
 
 
+__debug_mark_sphere(p1, p2, p3, c) -> (
+	if(global_debug, 
+		for([p1, p2, p3], __set_and_save(_, 'diamond_block') );
+		set(c, 'emerald_block');
+	);
+);
+
+//////// Shapes ///////
+
 __sphere(p1, p2, p3, material, width) -> (
 	l(c, r) = __circ(p1, p2, p3);
 	if(global_debug, print('c: ' + map(c, floor(_)) + ', r: ' + floor(r)) );
@@ -83,20 +99,16 @@ __sphere(p1, p2, p3, material, width) -> (
 		volume(c1+r, c2+r, c3+r, c1-r, c2-r, c3-r,
 			l(x, y, z) = pos(_)-c;
 			if( __tha_sphere(x, y, z),
-				set(_, material)
+				__set_and_save(_, material)
 			)
 		)
 		//run(str('/draw ball %s %s %s %s %s', c1, c2, c3, r, material) )
 	);
 
-	if(global_debug, (
-		set(p1, 'diamond_block');
-		set(p2, 'diamond_block');
-		set(p3, 'diamond_block');
-
-		set(c, 'emerald_block');
-		);
-	);
+	debug_mark_sphere(p1, p2, p3, c);
+	
+	dim = player() ~ 'dimension';
+	__put_into_history(global_this_story, dim); 
 );
 
 
@@ -115,19 +127,19 @@ __plane(p1, p2, p3, material, width) -> (
 	);
 
 	volume(a1, a2, a3, b1, b2, b3,
-		if(__tha_plane(pos(_)-l(a1, a2, a3)), set(_, material) )
+		if(__tha_plane(pos(_)-l(a1, a2, a3)), __set_and_save(_, material) )
 	);
 	
 
 	if(global_debug, (
-		set(l(a1, a2, a3), 'gold_block');
-		set(l(b1, b2, b3), 'gold_block');
+		for([ [a1, a2, a3], [b1, b2, b3] ], __set_and_save(_, 'gold_block') );
 
-		set(p1, 'diamond_block');
-		set(p2, 'diamond_block');
-		set(p3, 'diamond_block');
+		for([p1, p2, p3], __set_and_save(_, 'diamond_block') );
 		);
 	);
+	
+	dim = player() ~ 'dimension';
+	__put_into_history(global_this_story, dim); 
 );
 
 
@@ -152,18 +164,14 @@ __disc(p1, p2, p3, material, width) -> (
 	volume(c1+r, c2+r, c3+r, c1-r, c2-r, c3-r,
 		current = pos(_)-c;
 		if( __tha_plane(current) && __tha_sphere(current:0, current:1, current:2),
-			set(_, material)
+			__set_and_save(_, material)
 		);
 	);
 
-	if(global_debug, (
-		set(p1, 'diamond_block');
-		set(p2, 'diamond_block');
-		set(p3, 'diamond_block');
-
-		set(c, 'emerald_block');
-		);
-	);
+	__debug_mark_sphere(p1, p2, p3, c);
+	
+	dim = player() ~ 'dimension';
+	__put_into_history(global_this_story, dim); 
 );
 
 
@@ -190,18 +198,14 @@ __ring(p1, p2, p3, material, width) -> (
 	volume(c1+r, c2+r, c3+r, c1-r, c2-r, c3-r,
 		current = pos(_)-c;
 		if( __tha_plane(current) && __tha_sphere(current:0, current:1, current:2),
-			set(_, material)
+			__set_and_save(_, material)
 		);
 	);
 
-	if(global_debug, (
-		set(p1, 'diamond_block');
-		set(p2, 'diamond_block');
-		set(p3, 'diamond_block');
-
-		set(c, 'emerald_block');
-		);
-	);
+	__debug_mark_sphere(p1, p2, p3, c);
+	
+	dim = player() ~ 'dimension';
+	__put_into_history(global_this_story, dim); 
 );
 
 
@@ -211,8 +215,11 @@ __line_fast(p1, p2, material, width) -> (
 	t = l(range(max_size))/max_size;
 	for(t, 
  		b = m * _ + p1;
- 		set(b, material);
+ 		__set_and_save(b, material);
  	);
+	
+	dim = player() ~ 'dimension';
+	__put_into_history(global_this_story, dim); 
 );
 
 
@@ -246,10 +253,12 @@ __line(p1, p2, material, width) -> (
 	volume(p1:0, p1:1, p1:2, p2:0, p2:1, p2:2,
 		current = pos(_)-c;
 		if( __tha_plane1(current-p1) && __tha_plane2(current-p1),
-			set(_, material)
+			__set_and_save(_, material)
 		);
 	);
 
+	dim = player() ~ 'dimension';
+	__put_into_history(global_this_story, dim); 
 
 	// run(str('script fill %d %d %d %d %d %d %d %d %d "__tha_plane1(x, y, z) && __tha_plane2(x, y, z) " %s', 
 			// p1:0, p1:1, p1:2, p1:0, p1:1, p1:2, p2:0, p2:1, p2:2, material
@@ -260,6 +269,8 @@ __line(p1, p2, material, width) -> (
 
 __drawif(ammount, shape, material, width) -> (
 	dim = player() ~ 'dimension';
+	global_this_story = [];
+	
 	if(ammount == 3,
 		if(global_all_set:dim,
 			call(shape, global_positions:dim:0, global_positions:dim:1, global_positions:dim:2, material, width),
@@ -294,6 +305,38 @@ distance() -> (
 	);
 	return('')
 );
+
+line_sight(length, material) -> (
+	dim = player() ~ 'dimension';
+	pos1 = global_positions:dim:0;
+	
+	if( pos1 == null , print('Need to set all three positions first.'); return('') );
+
+	facing = player()~'facing';
+	end_point = pos_offset(pos1, facing, length);
+	
+	__line(pos1, end_point, material, 1);
+);
+
+////// Snowball eraser //////
+
+global_max_distance_sq = 169;
+global_max_depth = 700;
+
+_flood_delete(block, interior_block, origin, depth) -> (
+	if( depth < global_max_depth &&
+		_sq_distance(origin, pos(block)) < global_max_distance_sq &&
+		block == interior_block  ,
+		set(block, 'air');
+		for(neighbours(block), _flood_delete(_, interior_block, origin, depth+1) )
+	)
+);
+
+_remove_snow_balls(player) -> (
+	sb = filter(entity_selector('@e[type=snowball]'), _sq_distance(pos(player), pos(_)) );
+	for(sb, modify(_, 'remove') );
+);
+
 
 ////// Handle Markers //////
 
@@ -391,18 +434,29 @@ reset_positions() -> (
 
 // set position 1 if player left clicks with a golden sword
 __on_player_clicks_block(player, block, face) -> (
-	if(query(player(), 'holds'):0 == 'golden_sword',
+	if(player~'holds':0 == global_tool,
 		set_pos(1);
 	);
 );
 
 // set position 2 if player right clicks with a golden sword
 __on_player_uses_item(player, item_tuple, hand) -> (
-	if(query(player(), 'holds'):0 == 'golden_sword',
+	if(
+	// if tool, set positions
+	item_tuple:0 == global_tool,
 		if(query(player(), 'sneaking'),
 			set_pos(3),
 			set_pos(2)
-		);
+		),
+	
+	//else, if snow ball
+	item_tuple:0 == 'snowball',
+		schedule(0, '_remove_snow_balls', player);
+		
+		target = query(player, 'trace', 50);
+		if(target==null, return('') );
+		_flood_delete(target, target, pos(target), 0);
+		
 	);
 );
 
@@ -417,3 +471,72 @@ global_armor_stands = m();
 __reset_positions('overworld');
 __reset_positions('the_nether');
 __reset_positions('the_end');
+
+
+
+////// Undo stuff ///////
+
+global_history = {
+					'overworld' -> [] ,
+					'the_nether' -> [] ,
+					'the_end' -> [] ,
+				};
+
+__set_and_save(block, material) -> ( //defaults to no replace
+	global_this_story:length(global_this_story) = [pos(block), block];
+	set(block , material);
+);
+
+__put_into_history(story, dim) -> (	
+	print(str('Set %d blocks', length(story) ));
+	global_history:dim += story;
+	return('');
+);
+
+__undo(index, dim) -> (
+	// iterate over the story backwards
+	for(range(length(global_history:dim:index)-1, -1, -1),
+		print(global_history:dim:index:_);
+		set(global_history:dim:index:_:0, global_history:dim:index:_:1); // (position, block) pairs
+	);
+	// remove used story
+	delete(global_history:dim, index);
+);
+
+go_back_stories(num) -> (
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		print(format('rb Error: ', 'y Need a positive number of steps to go to'));
+		return('')
+	);
+	
+	dim = player() ~ 'dimension';
+
+	index = length(global_history:dim)-num;
+	if(index<0, 
+		print(format('rb Error: ', str('y You only have %d actions available to undo', length(global_history:dim) ) ));
+		return('')
+	);
+	
+	__undo(index, dim);
+	print(str('Undid what you did %s actions ago', num ));	
+);
+
+undo(num) -> (
+	//check for valid input
+	if( type(num) != 'number' || num <= 0, 
+		print(format('rb Error: ', 'y Need a positive number of steps to undo'));
+		return('')
+	);
+
+	dim = player() ~ 'dimension';
+	
+	index = length(global_history:dim)-num;
+	if(index<0, 
+		print(format('rb Error: ', str('y You only have %d actions to undo available', length(global_history:dim) ) ));
+		return('')
+	);
+	
+	loop(num, __undo(length(global_history:dim)-1, dim) );
+	print(str('Undid the last %d actions', num) );
+);
