@@ -3,6 +3,8 @@ __command() -> print(player(), str('Use a %s to set positions, use the draw comm
 global_debug = false;
 global_show_pos = true;
 global_tool = 'golden_sword';
+global_delete_item = 'snowball';
+global_max_delete_radius_sq = 625;
 
 
 /////// Utilities ////////
@@ -320,23 +322,41 @@ line_sight(length, material) -> (
 
 ////// Snowball eraser //////
 
-global_max_distance_sq = 169;
-global_max_depth = 700;
+global_trace_distance = 100;
+global_limit = 10000;
 
-_flood_delete(block, interior_block, origin, depth) -> (
-	if( depth < global_max_depth &&
-		_sq_distance(origin, pos(block)) < global_max_distance_sq &&
-		block == interior_block  ,
-		set(block, 'air');
-		for(neighbours(block), _flood_delete(_, interior_block, origin, depth+1) )
-	)
-);
-
-_remove_snow_balls(player) -> (
-	sb = filter(entity_selector('@e[type=snowball]'), _sq_distance(pos(player), pos(_)) );
+_remove_projectiles(player) -> (
+	sb = filter(entity_selector(str('@e[type=%s]', global_delete_item)), _sq_distance(pos(player), pos(_)) );
 	for(sb, modify(_, 'remove') );
 );
 
+_sq_distance(a, b) -> reduce(a-b, _a + _*_, 0);
+
+_flood_delete(start) -> (
+	interior_block = block(start);
+	set(start, 'air');
+	
+	visited = {start->null};
+	queue = [start];
+	
+	while(length(queue)>0, global_limit,
+		current_pos = queue:0;
+		delete(queue, 0);
+		
+		for(neighbours(current_pos),
+			current_neighbour = pos(_);
+			// check neigbours, add the non visited ones to the visited set
+			if(!has(visited, current_neighbour),
+				visited:current_neighbour = null;
+				// if the block is not too far and is itnerior, delete it and add to queue to check neighbours later
+				if( _sq_distance(current_neighbour, start) < global_max_delete_radius_sq && _==interior_block,
+					queue:length(queue) = current_neighbour;
+					set(current_neighbour, 'air')
+				);
+			);
+		);
+	);
+);
 
 ////// Handle Markers //////
 
@@ -449,13 +469,15 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 			set_pos(2)
 		),
 	
-	//else, if snow ball
-	item_tuple:0 == 'snowball',
-		schedule(0, '_remove_snow_balls', player);
+	//else, if projectile tool
+	item_tuple:0 == global_delete_item,
+				
+		schedule(0, '_remove_projectiles', player);
 		
-		target = query(player, 'trace', 50);
+		target = query(player, 'trace', global_trace_distance);
 		if(target==null, return('') );
-		_flood_delete(target, target, pos(target), 0);
+		
+		_flood_delete(pos(target));
 		
 	);
 );
