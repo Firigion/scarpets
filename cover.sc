@@ -47,7 +47,7 @@ __make_pairs(player) -> (
 		//if both are initialized shulkers, look at the contents
 		__make_shulker_pairs(mainhand:2, offhand:2),
 		//else look at the items themselves
-		global_pairs = {__process_alias(offhand:0) -> __process_special_cases(__process_alias(mainhand:0))}
+		global_pairs = {__process_alias(offhand:0) -> __process_special_cases([__process_alias(mainhand:0), mainhand:1])}
 	);
 	if(offhand==null, 
 		__place_fun(block) -> __place_default_if(block),
@@ -62,7 +62,7 @@ __make_shulker_pairs(mainhand_data, offhand_data) -> (
 
 	global_pairs = {};
 	loop( 27,
-		if(mainhand_list:_ != null, global_pairs:(offhand_list:_) = __process_special_cases(mainhand_list:_) ) 
+		if(mainhand_list:_ != null, global_pairs:(offhand_list:_:0) = __process_special_cases(mainhand_list:_) ) 
 	);
 );
 
@@ -90,7 +90,7 @@ __get_item_list(box_data) -> (
 	// fill with items in their slots
 	for(item_tuple_list,
 		item = _:'id' - 'minecraft:';
-		item_list:(_:'Slot') = __process_alias(item)
+		item_list:(_:'Slot') = [__process_alias(item), _:'Count']
 	);
 	return(item_list)
 );
@@ -102,21 +102,47 @@ __process_alias(item) -> (
 // Uses lists of lists in case some block needs more properties
 global_special_cases = {
 	'_button' -> [['face', 'floor']],
-	'sea_pickle' -> [['waterlogged', 'false']],	
-	'snow' -> [['layers', 2]],
+	'sea_pickle' -> [['waterlogged', 'false']],
 };
-__process_special_cases(block_name) -> (
-	for(keys(global_special_cases), if(block_name~_, key = _) );
-	// if block_name was in keys
-	if(key,
-		// parse properties
-		props_str = join(',', map(global_special_cases:key, str('%s="%s"', _:0, _:1)) );
-		return( block(str('%s[%s]', block_name, props_str)) ),
-		//else, return the block
+global_special_counts = { // pairs of [property, max] to modify
+	'sea_pickle' -> ['pickles', 4],
+	'snow' -> ['layers', 8]
+};
+__process_special_cases(block_name_count_tuple) -> (
+	[block_name, count] = block_name_count_tuple;
+	for(keys(global_special_cases), if(block_name~_, prop_list = global_special_cases:_) );
+	for(keys(global_special_counts), 
+		if(_==block_name,
+			count_prop = copy(global_special_counts:_); 
+			count_prop:1 = min(count_prop:1, count)
+		)
+	);
+	print(count_prop);
+
+	if( // both exist
+		prop_list && count_prop, prop_list += count_prop,
+		// else if only prop_list, do nothing
+		prop_list, null,
+		// else if only count_prop, that's the whole list
+		count_prop, prop_list = [count_prop],
+		// else, if none exist, just return plane block
 		return(block_name)
 	);
+
+	// pare the properties string and return the block
+	props_str = join(',', map(prop_list, str('%s="%s"', _:0, _:1)) );
+	return( block(str('%s[%s]', block_name, props_str)) )
 );
 
+
+sp()->(
+	sb = player() ~'holds';
+	items = __get_item_list(sb:2);
+	blocks = map(items, if(_, __process_special_cases(_), continue()));
+
+	at = pos_offset(player() ~'trace', 'up');
+	set(at, blocks:0)
+);
 
 ////// Genearl utils
 __error(player, msg) -> print(player, format('rb Error: ', str('y %s', msg)));
@@ -368,7 +394,7 @@ random_cover() -> (
 	p = player();
 	
 	dim = p ~ 'dimension';
-	if(!global_all_set:dim, __error(p, 'You must select a region to cover first. Use an iron sword.'); return(''));
+	if(!global_all_set:dim, __error(p, str('You must select a region to cover first. Use a %s.', global_tool)); return(''));
 
 	[mainhand_list, offhand_map] = __random_prepair(p);
 	if(!mainhand_list, __error(p, 'Need an initialized shulker to make a random pattern.'); return(''));
@@ -391,15 +417,15 @@ __random_prepair(p) -> (
 	);
 	
 	// get all the non empty slots
-	mainhand_list = map(__get_item_list(mainhand:2), if(_, _, continue()));
+	mainhand_list = map(__get_item_list(mainhand:2), if(_, __process_special_cases(_), continue()));
 	for(mainhand_list, __test_blocks(_));
 	
-	offhand_map = {};
+	offhand_map = {}; // uses a map to check if the thing to cover is there
 
 	if(offhand,
 		// if it's an initialized shulker box, create the list, else just the item
 		if(offhand:0~'shulker_box' && offhand:2, 
-			for(__get_item_list(offhand:2), offhand_map:_=null),
+			for(__get_item_list(offhand:2), offhand_map:(_:0)=null),
 			offhand_map = {offhand:0}
 		);
 	);
