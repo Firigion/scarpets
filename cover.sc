@@ -156,14 +156,14 @@ __place_if(block) -> (
 	cover = global_pairs:str(block);
 	if(cover != null,
 		p = pos(block) + [0,1,0];
-		if(air(p) && __check(block), __set_and_save(p, cover))
+		if(air(p) && __check(block) && _light(p), __set_and_save(p, cover))
 	);
 );
 
 __place_default_if(block) -> (
 	block_to_place = global_pairs:null;
 	p = pos(block) + [0,1,0];
-	if(air(p) && __check(block) && block!=block_to_place && !air(block), __set_and_save(p, block_to_place));
+	if(air(p) && __check(block) && block!=block_to_place && !air(block) && _light(p), __set_and_save(p, block_to_place));
 );
 		
 
@@ -171,10 +171,13 @@ __check(block) -> (
 	if(	
 		block ~ '_slab', return(property(block, 'type')=='top'),
 		block ~ '_stairs', return(property(block, 'half')=='top'),
+		block == 'snow', return(property(block, 'layers')==8),
 		// for any other block, true
 		return(true)
 	)
 );
+
+_light(block)-> true;
 
 __test_blocks(to_place) -> (
 	pos = [0, 0, 0];
@@ -255,6 +258,22 @@ toggle_parallel() -> (
 	);
 	return('')
 );
+
+global_light_threshold = 8;
+global_check_light = false;
+toggle_check_light() -> (
+	p = player();
+	global_check_light = !global_check_light;
+	if(global_check_light, 
+		print(p, str('When placing cover blocks, block light level will be checked to be less than %s.', global_light_threshold));
+		_light(block) -> block_light(block)<global_light_threshold,
+		//else
+		print(p, 'Light level is ignored');
+		_light(block) -> true;
+	);
+	return('')
+);
+set_light_level_check(number) -> global_light_threshold = number;
 
 region() -> (
 	p = player();
@@ -376,7 +395,7 @@ random() -> (
 	p = player();
 	
 	dim = p ~ 'dimension';
-	if(!global_all_set:dim, __error(p, 'You must select a region to cover first. Use an iron sword.'); return(''));
+	if(!global_all_set:dim, __error(p, str('You must select a region to cover first. Use a %s.', global_tool)); return(''));
 
 	[mainhand_list, offhand_map] = __random_prepair(p);
 	if(!mainhand_list, __error(p, 'Need an initialized shulker to make a random pattern.'); return(''));
