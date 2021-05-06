@@ -3,7 +3,21 @@ Scarpet scripts for small utilities.
 
 Files with .sc format are meant to be used with `/script load <script_name> [global]` (see [this](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world) tutorial to learn how to install them). Files with .mccmd format are a thing I came up with as a reminder that they are not apps per se. They are a very long command that needs to be pasted into an (impulse) command block and powered once. I did this because this way you can easily test stuff in a server and don't need access to server files to upload the .sc file.
 
+## Contents
+* [Flowerify](https://github.com/Firigion/scarpets/blob/master/README.md#flowerify) (Deprecated)
+* [Skip night](https://github.com/Firigion/scarpets/blob/master/README.md#skip-night)
+* [Shapes](https://github.com/Firigion/scarpets/blob/master/README.md#shapes)
+* [Cover](https://github.com/Firigion/scarpets/blob/master/README.md#cover)
+* [Soft replace](https://github.com/Firigion/scarpets/blob/master/README.md#soft-replace)
+* [Nether portal POI display](https://github.com/Firigion/scarpets/blob/master/README.md#nether-portal-poi-display)
+* [Spawning spheres](https://github.com/Firigion/scarpets/blob/master/README.md#spawning-spheres) (Deprecated)
+* [Stack potion effects](https://github.com/Firigion/scarpets/blob/master/README.md#stack-potion-effects)
+* [Curves](https://github.com/Firigion/scarpets/blob/master/README.md#curves)
+* [Storage tech aid](https://github.com/Firigion/scarpets/blob/master/README.md#storage-tech-aid)
+
 # Flowerify
+[NOTE: this is deprecated in favour of a better app, available at the [official scarpet app store](https://github.com/gnembon/scarpet).]
+
 Load with `/script load flowerify global`. It has two very simple functionalities: by running `/flowerify toggle_flowerify_continuous`, it will generate all flowers centered around the topmost grass block under the player in an 11x11 square. Move around to generate all of them. Optionally, you can use `/flowerify set_pos 1` and `flowerily set_pos 2` to define a volume in which to generate flowers using the command `/flowerify flowerify_area`. You can hide/show the position markers with `flowerily set_pos [0|1]`. Go watch this dated [video](https://www.youtube.com/watch?v=1T9oyzhIn1k) showcasing an old version of this.
 
 # Skip night
@@ -82,6 +96,8 @@ The app also adds two simple commands to place and remove nether portal POIs fro
 For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully up to date with the features.
 
 # Spawning spheres
+[NOTE: this is deprecated in favour of the built-in overlay app.]
+
 To use this app, put the .sc file int your scripts folder and run `/script load spawning_spheres`. It adds an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding colour will appear. Inner sphere shows minimum distance to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another colour to create a second double sphere. Right click with a glass block to delete all renders.
 
 If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
@@ -274,7 +290,7 @@ To accompany this, you cna also set the contents of an inventory to some specifi
 
 To use it, look at the inventory in question and run `/storagetech_aid fill_ss <signal_strength>` or `/storagetech_aid fill_ss <signal_strength> <pos>` to set some inventory other than the one you are looking at.
 
-## Others
+### Others
 
 There are some other odds and ends in this app:
 
