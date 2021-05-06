@@ -7,7 +7,7 @@ global_safe_set = false; // if true, only set blocks if old block is air; if fal
 global_1st_slot_fill = 41; // a number that will be used in min(stack_size, number)
 global_hopper_ss_level = 3; // signal strength level the hoppers should have when it revices one more item
 global_chest_ss_level = 2; // signal strength level the encoder chest has, such that if you remove one item, it goes down
-global_file_type = 'json';
+global_file_type = 'text';
 
 // offset the second half of the chest has to be placed into to make it double
 global_offset = {'south'->[-1, 0, 0], 'west'->[0,0, -1], 'north'->[1, 0, 0], 'east'->[0, 0, 1]};
