@@ -217,3 +217,76 @@ Here's a [video](https://youtu.be/HCePbkaB8Vk) showing this functionality.
 [5]: https://github.com/Firigion/scarpets#undo
 [6]: https://github.com/Firigion/scarpets#replace
 [7]: https://github.com/Firigion/scarpets#soft_replace
+
+# Storage tech aid
+
+This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designig. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
+
+### Magic hoppers and chests
+
+Upon loading up the app (`/script load storagetech_aid`), you will recieve three chests and two hoppers. If you hover over them they will tell you what each does, but for clarity, here's a brakedown:
+* `Double chests full of boxes` will place a row of double chests in the direction you are looking full of shulker boxes full of items. Each chest will contain a uinque item type.
+* `Double chests full of items` will place a row of double chests in the direction you are looking full of stacks of items. Each chest will contain a uinque item type.
+* `Hopper full of single item type` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will be full of one item type each, useful for doublespeed sorters.
+* `Signal strength defined sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have the settings required for an item filter: the item to filter in the first slot and the the rest of the slots with dummy (blocker) items. You can set the ammount of items for the first slot using `/storagetech_aid set_fst_slot_fill_level <number>` and set the signal srength of the filter with `/storagetech_aid set_hopper_ss <number>`. That means, the hopper will have enough items such that, when it recieves a new item, the signal strength will raise to the requested value. Default values are 41 items and ss3, what's needed for a standard overflow proof item sorter. If the signal strength value and first slot stack size you specify are not compatible, all dummy items stacks will be set to one and the first slot value will be the default.
+* `Double chests configured for hex encoders` will place a row of double chests in the direction you are looking. Each chest will me set up for a traditional item encoder system, where if you take out one item from it, the signal strength value reading from it will decrease by one. The ss value can be set with `/storagetech_aid set_chest_ss <number>`. The items are generated from files, see [below](https://github.com/Firigion/scarpets#encoded_chest_files).
+
+### Items lists and files
+
+The default magic chests and hoppers will use a hardcoded list of items, which you can find in the first line of the code. Feel free to replace it with your own list to suit your needs. The list will skip any misspelled items and is not caps sensitive (placing a magic hopper or chest will tell you which entries are being skipped).
+
+If you don't feel like modifying the code, or think that you need to constantly modify your list or have many lists at hand, you can use the file-based magic hoppers and chests. To get them, run `/storagetech_aid <type> <file>`, where `<type>` can be:
+* `chest_from_file` to get the chest full of items
+* `chest_shulkers_from_file` to get the chest full of shulkers full of items
+* `hopper_full_from_file` to get the hopper full of items
+* `hopper_from_file` to get the hopper filter maker
+
+The files in question have to be located in a folder named `item_lists` which in turn has to be inside a folder named `storagetech_aid.data`. This folder needs to be in the same directory the app `storagetech_aid.sc` is. The files can be in either `JSON` or plain `text` format. For `JSON` files the format is as follows:
+```json
+[
+"stone",
+"dirt",
+"grass_block",
+"cobblestone"
+]
+```
+while for `text` files, they should look like this:
+```
+stone
+dirt
+grass_block
+cobblestone
+```
+
+Depending on how you generate these files, you might prefer one format or the other. The app will only list files of one type at a time. To decide which type to show, use `/storagetech_aid set_safe_mode [text|json]`, defaults to text.
+
+### Encoded chest files
+
+Files to define the encoded chests need to be inside a folder named `encoders`, again,  inside `storagetech_aid.data`. Formatting and file types works the same as for item lists. The files will be loaded "in order", so I recommend naming them numbers of increasing order or something like that (`1.json`, `2.json`, etc). Each file will correspond to one chest, and the contents of the chest will be ordered in the same way the entries in the file are. If there are not enough entries to fill the double chest, empty slots will be padded with dummy items. If there are too many, only the first 54 entries will be used. 
+
+### Signal strength
+
+The app also has a functionality to return the signal strength of a cointainer. This is especially useful for overloaded containers (containers with stacked unstackables, which usually results in a comparator reading signal strength higher than 15), since a redstone dust powered by a comparator reading from this inventory will be at ss15.
+
+To use it, just look at the inventory in question and run `/storagetech_aid ss` or `/storagetech_aid ss <pos>` to specify a position other than the one you are looking at.
+
+To accompany this, you cna also set the contents of an inventory to some specific signal strength level. Again, this is intended for overloaded inventories, so by default it will stack unstackable items until it reaches the needed value. If it can't, it will use stackable items to fine tune the result (for instance, adding an unstackable item to a hopper will increase it's ss in more than one, so stackables are needed).
+
+To use it, look at the inventory in question and run `/storagetech_aid fill_ss <signal_strength>` or `/storagetech_aid fill_ss <signal_strength> <pos>` to set some inventory other than the one you are looking at.
+
+## Others
+
+There are some other odds and ends in this app:
+
+#### Safe mode
+The app by default will replace any block in its way when placing hoppers and chests. Thurning on safe mode (with `/storagetech_aid set_safe_mode true`) will make it so that only air blocks are replaced.
+
+#### Chest of stacked shulkers
+Just that: get a chest full of stacked shulker boxes, so you don't have to stack them yourself. Run `/storagetech_aid stacked_shulkers_chest` to set the chest at your feet.
+
+#### Some funcy barrels
+At some point someone needed a bunch of items named with names going from 1 to some given number, so I added a thing to create a row of barrels in the direction you are looking at willed with stacks of buttons named `1`, `2` and so on until the number specified by `/storagetech_aid bin_barrel <number>`.
+
+#### Video!
+
+Like always, I made a (not so shor this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them.
