@@ -18,8 +18,9 @@ _test_items(list) -> (
     wrong = [];
     out = map(list, 
             try(
-                stack_limit(_);
-                _,
+                item = lower(_);
+                stack_limit(item);
+                item,
 //catch
             'unknown_item',
             wrong += [_, _i];
