@@ -1,4 +1,4 @@
-__command() -> print(player(), str('Use a %s to set positions, use the draw commands to draw shapes, and distance to querry distance between positions 1 and 2. You can throw a snow ball to erase a connected object.', global_tool));
+//__command() -> print(player(), str('Use a %s to set positions, use the draw commands to draw shapes, and distance to querry distance between positions 1 and 2. You can throw a snow ball to erase a connected object.', global_tool));
 
 global_debug = false;
 global_show_pos = true;
@@ -69,7 +69,7 @@ __circ(p1, p2, p3) -> (
 );
 
 
-__debug_mark_sphere(p1, p2, p3, c) -> (
+debug_mark_sphere(p1, p2, p3, c) -> (
 	if(global_debug, 
 		for([p1, p2, p3], __set_and_save(_, 'diamond_block') );
 		set(c, 'emerald_block');
@@ -78,7 +78,7 @@ __debug_mark_sphere(p1, p2, p3, c) -> (
 
 //////// Shapes ///////
 
-__sphere(p1, p2, p3, material, width) -> (
+sphere(p1, p2, p3, material, width) -> (
 	l(c, r) = __circ(p1, p2, p3);
 	if(global_debug, print('c: ' + map(c, floor(_)) + ', r: ' + floor(r)) );
 	l(c1, c2, c3) = c;
@@ -114,7 +114,7 @@ __sphere(p1, p2, p3, material, width) -> (
 );
 
 
-__plane(p1, p2, p3, material, width) -> (
+plane(p1, p2, p3, material, width) -> (
 	v1 = p2-p1;
 	v2 = p3-p1;
 
@@ -145,7 +145,7 @@ __plane(p1, p2, p3, material, width) -> (
 );
 
 
-__disc(p1, p2, p3, material, width) -> (
+disc(p1, p2, p3, material, width) -> (
 
 	l(c, r) = __circ(p1, p2, p3);
 	l(c1, c2, c3) = c;
@@ -170,14 +170,14 @@ __disc(p1, p2, p3, material, width) -> (
 		);
 	);
 
-	__debug_mark_sphere(p1, p2, p3, c);
+	debug_mark_sphere(p1, p2, p3, c);
 	
 	dim = player() ~ 'dimension';
 	__put_into_history(global_this_story, dim); 
 );
 
 
-__ring(p1, p2, p3, material, width) -> (
+ring(p1, p2, p3, material, width) -> (
 
 	l(c, r) = __circ(p1, p2, p3);
 	//c = map(c, floor(_) );
@@ -204,19 +204,19 @@ __ring(p1, p2, p3, material, width) -> (
 		);
 	);
 
-	__debug_mark_sphere(p1, p2, p3, c);
+	debug_mark_sphere(p1, p2, p3, c);
 	
 	dim = player() ~ 'dimension';
 	__put_into_history(global_this_story, dim); 
 );
 
 
-__line_fast(p1, p2, material, width) -> (
+line_fast(p1, p2, material) -> (
  	m = p2-p1;
 	max_size = max(map(m, abs(_)));
 	t = l(range(max_size))/max_size;
 	for(t, 
- 		b = m * _ + p1;
+ 		b = block(m * _ + p1);
  		__set_and_save(b, material);
  	);
 	
@@ -225,7 +225,7 @@ __line_fast(p1, p2, material, width) -> (
 );
 
 
-__line(p1, p2, material, width) -> (
+line(p1, p2, material, width) -> (
 	v = p2-p1;
 
 	if(v:2 == 0,
@@ -268,39 +268,7 @@ __line(p1, p2, material, width) -> (
 
 );
 
-
-__drawif(ammount, shape, material, width) -> (
-	dim = player() ~ 'dimension';
-	global_this_story = [];
-	
-	if(ammount == 3,
-		if(global_all_set:dim,
-			call(shape, global_positions:dim:0, global_positions:dim:1, global_positions:dim:2, material, width),
-			print('Need to set all three positions first.')
-		),
-	ammount == 2,
-		pos1 = global_positions:dim:0;
-		pos2 = global_positions:dim:1;
-		if( pos1 != null && pos2 != null,
-			call( shape, pos1, pos2, material, width),
-			print('Need to set all three positions first.')
-		);
-	);
-);
-
-
-draw_disc(material, width) -> __drawif(3, '__disc', material, width/2);
-draw_ring(material, width) -> __drawif(3, '__ring', material, width/2);
-draw_sphere(material, width) -> __drawif(3, '__sphere', material, width);
-draw_plane(material, width) -> __drawif(3, '__plane', material, width/2);
-draw_line(material, width) -> __drawif(2, '__line', material, width/2);
-draw_line_fast(material) -> __drawif(2, '__line_fast', material, none);
-
-distance() -> (
-	dim = player() ~ 'dimension';
-	pos1 = global_positions:dim:0;
-	pos2 = global_positions:dim:1;
-
+distance(pos1, pos2) -> (
 	if( pos1 != null && pos2 != null,
 		print( str('Distance between markers is %.2f', __norm(pos1-pos2) ) ),
 		print('Need to set all three positions first.')
@@ -308,7 +276,7 @@ distance() -> (
 	return('')
 );
 
-line_sight(length, material) -> (
+line_sight(p1, material, length) -> (
 	dim = player() ~ 'dimension';
 	pos1 = global_positions:dim:0;
 	
@@ -317,7 +285,7 @@ line_sight(length, material) -> (
 	facing = player()~'facing';
 	end_point = pos_offset(pos1, facing, length);
 	
-	__line(pos1, end_point, material, 1);
+	line(pos1, end_point, material, 1);
 );
 
 ////// Snowball eraser //////
@@ -376,7 +344,7 @@ __remove_mark(i, dim) -> (
  	if(e != null, modify(e, 'remove'));
 );
 
-get_armor_stands() -> print(global_armor_stands);
+//get_armor_stands() -> print(global_armor_stands);
 
 // set a position
 set_pos(i) -> (
@@ -562,3 +530,76 @@ undo(num) -> (
 	loop(num, __undo(length(global_history:dim)-1, dim) );
 	print(str('Undid the last %d actions', num) );
 );
+
+
+__config() -> {
+	'commands' -> {
+		'ring <block>' -> _(b) -> __callif('ring', b, 0.5),
+		'ring <block> <width>' -> _(b, w) -> __callif('ring', b, w/2),
+
+		'disc <block>' -> _(b) -> __callif('disc', b, 0.5),
+		'disc <block> <width>' -> _(b, w) -> __callif('disc', b, w/2),
+
+		'sphere <block>' -> _(b) -> __callif('sphere', b, 1),
+		'sphere <block> <width>' -> _(b, w) -> __callif('sphere', b, w),
+
+		'plane <block>' -> _(b) -> __callif('plane', b, 0.5),
+		'plane <block> <width>' -> _(b, w) -> __callif('plane', b, w/2),
+
+		'line <block>' -> _(b) -> __callif('line', b, 0.5),
+		'line <block> <width>' -> _(b, w) -> __callif('line', b, w/2),
+		'line <block> fast' -> _(b) -> __callif('line_fast', b),
+		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
+
+		'distance' -> _() -> __callif('distance'),
+
+		'undo <actions>' -> 'undo',
+		'undo jump <actions>' -> 'go_back_stories',
+
+		'markers reset' -> 'reset_positions',
+		'markers toggle' -> 'toggle_show_pos',
+		'markers set <index>' -> 'set_pos',
+		'markers get' -> 'get_pos',
+
+	},
+	'arguments' -> {
+		'actions' -> {'type'->'int', 'min'->1, 'suggest'->[1,3,5]},
+		'width' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,3,5]},
+		'length' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,12,24]},
+		'index' -> {'type' -> 'int', 'min' -> 1, 'max'->3, 'suggest'->[1,2,3]},
+	},
+};
+
+
+__callif(fun, ...args) -> (
+	dim = player() ~ 'dimension';
+	global_this_story = [];
+
+	ammount = global_points_ammount:fun;
+
+	positions = [];
+	loop(ammount, 
+		pos = global_positions:dim:_;
+		if(pos==null,
+			print(format('r Need to set '+ammount+' positions first'));
+			exit();
+		);
+		positions += pos;
+	);
+	print(positions);
+	//if positions were set, call function
+	call(fun, ...positions, ...args);
+);
+
+// how many set positions does that function need?
+global_points_ammount = {
+	'ring' -> 3,
+	'disc' -> 3,
+	'sphere' -> 3,
+	'plane' -> 3,
+	'line' -> 2,
+	'line_fast' -> 2,
+	'line_sight' -> 1,
+	'distance' -> 2
+};
+
