@@ -50,7 +50,9 @@ __max_list(list_of_positions) -> (
 		max(map(list_of_positions, _:i));
 	);
 );
-
+__proj(v1, v2) -> ( //projection of v1 onto v2
+  v2*__dot_prod(v1,v2)/__dot_prod(v2,v2);
+);
 
 __circ(p1, p2, p3) -> (
 	v1 = p2-p1;
@@ -67,9 +69,7 @@ __circ(p1, p2, p3) -> (
 	center = p1 + k1 * v1 + k2 * v2;
 	l(center, __norm(center-p1));
 );
-__proj(v1, v2) -> ( //projection of v1 onto v2
-  v2*__dot_prod(v1,v2)/__dot_prod(v2,v2)
-);
+
 
 debug_mark_sphere(p1, p2, p3, c) -> (
 	if(global_debug, 
@@ -295,11 +295,14 @@ tube_circle(p1,p2,p3,material,width) ->(
   v3 = p3-p1;
   vmajor = v3 - __proj(v3,v1);
   rmajor = __norm(vmajor);
-  magv1=norm(v1);
-  cmin=(0,0,0);
-  cmax=(0,0,0);
+  rminor = rmajor;
+  magv1=__norm(v1);
+  cmin=l(0,0,0);
+  cmax=l(0,0,0);
   loop(3,
-    dn = sin(acos(get(v1,_)/magv1))*rmajor;
+    
+    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+width);
+    print('dn = '+str(dn));
     if( get(v1,_)>=0,
       put(cmin, _, floor(get(p1,_)-dn));
       put(cmax, _, ceil(get(p2,_)+dn));
@@ -309,28 +312,47 @@ tube_circle(p1,p2,p3,material,width) ->(
       put(cmax, _, ceil(get(p1, _) + dn));
     );
   );
-  vminor = rmajor*__normalize(__cross_prod(vmajor,v1));
+  print(str(cmin));
+  print(str(cmax));
+  hminor = __normalize(__cross_prod(vmajor,v1));
+  hmajor = __normalize(vmajor);
+  //print(str(hminor)+','+str(hmajor));
   volume(cmin,cmax,
-    tv=pos(_)-v1;
+    tv=pos(_)-p1;
+    tp=pos(_);
+    magProjMajor = __dot_prod(tv,hmajor);
+    magProjMinor = __dot_prod(tv,hminor);
     
-    magProjMajor = __dot_prod(tv,vmajor);
-    magProjMinor = __dot_prod(tv,vminor);
-    if(magProjMajor^2/(rmajor^2)+magProjMinor^2/rmajor^2>=1 && magProjMajor^2/(rmajor+width)^2+magProjMinor^2/(rmajor+width)^2<=1 && __dot_prod(tv,v1)>=0 && __dot_prod(pos(_)-p2,-v1)>=0,
-      set(pos(_),material);
-      
+    //this long if statement is the eqivlent of the check function from the python ver.
+    //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1;
+    //outside=((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1;
+    //print(str((magProjMajor)^2/(rmajor+width)^2)+'+'+str(magProjMinor));
+    //print(str(inside)+','+str(outside)+':'+str(tp));
+    started = (__dot_prod(tv,v1))>=0;
+    notended = (__dot_prod(tp-p2, -1*v1))>=0;
+    if( (((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1 &&
+          ((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1 
+          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+      set(pos(_),material),
+      continue()
     );
+    
+    
   );
 );
+
 tube_elipse(p1,p2,p3,material,width,rminor) ->(
   v1 = p2-p1;
   v3 = p3-p1;
   vmajor = v3 - __proj(v3,v1);
   rmajor = __norm(vmajor);
-  magv1=norm(v1);
+  magv1=__norm(v1);
   cmin=l(0,0,0);
   cmax=l(0,0,0);
   loop(3,
-    dn = sin(acos(get(v1,_)/magv1))*max(rmajor,rminor);
+    
+    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+width);
+    print('dn = '+str(dn));
     if( get(v1,_)>=0,
       put(cmin, _, floor(get(p1,_)-dn));
       put(cmax, _, ceil(get(p2,_)+dn));
@@ -340,15 +362,32 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
       put(cmax, _, ceil(get(p1, _) + dn));
     );
   );
-  vminor = rminor*__normalize(__cross_prod(vmajor,v1));
+  print(str(cmin));
+  print(str(cmax));
+  hminor = __normalize(__cross_prod(vmajor,v1));
+  hmajor = __normalize(vmajor);
+  //print(str(hminor)+','+str(hmajor));
   volume(cmin,cmax,
-    tv=pos(_)-v1;
-    magProjMajor = __dot_prod(tv,vmajor);
-    magProjMinor = __dot_prod(tv,vminor);
+    tv=pos(_)-p1;
+    tp=pos(_);
+    magProjMajor = __dot_prod(tv,hmajor);
+    magProjMinor = __dot_prod(tv,hminor);
+    
     //this long if statement is the eqivlent of the check function from the python ver.
-    if(magProjMajor^2/(rmajor^2)+magProjMinor^2/rminor^2>=1 && magProjMajor^2/(rmajor+width)^2+magProjMinor^2/(rminor+width)^2<=1 && __dot_prod(tv,v1)>=0 && __dot_prod(pos(_)-p2,-v1)>=0,
-      set(pos(_),material);
+    //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1;
+    //outside=((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1;
+    //print(str((magProjMajor)^2/(rmajor+width)^2)+'+'+str(magProjMinor));
+    //print(str(inside)+','+str(outside)+':'+str(tp));
+    started = (__dot_prod(tv,v1))>=0;
+    notended = (__dot_prod(tp-p2, -1*v1))>=0;
+    if( (((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1 &&
+          ((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1 
+          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+      set(pos(_),material),
+      continue()
     );
+    
+    
   );
 );
 ////// Snowball eraser //////
@@ -631,7 +670,7 @@ __config() -> {
 		'width' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,3,5]},
 		'length' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,12,24]},
 		'index' -> {'type' -> 'int', 'min' -> 1, 'max'->3, 'suggest'->[1,2,3]},
-    'rminor' -> {'type' -> 'double', 'min' -> 0, 'suggest'->[5,8.5,12.4]}
+    'rminor' -> {'type' -> 'float', 'min' -> 0, 'suggest'->[5,8.5,12.4]}//need to set this as a float or something
 	},
 };
 
