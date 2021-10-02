@@ -67,7 +67,9 @@ __circ(p1, p2, p3) -> (
 	center = p1 + k1 * v1 + k2 * v2;
 	l(center, __norm(center-p1));
 );
-
+__proj(v1, v2) -> ( //projection of v1 onto v2
+  v2*__dot_prod(v1,v2)/__dot_prod(v2,v2)
+);
 
 debug_mark_sphere(p1, p2, p3, c) -> (
 	if(global_debug, 
@@ -288,6 +290,67 @@ line_sight(p1, material, length) -> (
 	line(pos1, end_point, material, 1);
 );
 
+tube_circle(p1,p2,p3,material,width) ->(
+  v1 = p2-p1;
+  v3 = p3-p1;
+  vmajor = v3 - __proj(v3,v1);
+  rmajor = __norm(vmajor);
+  magv1=norm(v1);
+  cmin=(0,0,0);
+  cmax=(0,0,0);
+  loop(3,
+    dn = sin(acos(get(v1,_)/magv1))*rmajor;
+    if( get(v1,_)>=0,
+      put(cmin, _, floor(get(p1,_)-dn));
+      put(cmax, _, ceil(get(p2,_)+dn));
+    );
+    if( get(v1,_)<0,
+      put(cmin, _, floor(get(p2, _) - dn));
+      put(cmax, _, ceil(get(p1, _) + dn));
+    );
+  );
+  vminor = rmajor*__normalize(__cross_prod(vmajor,v1));
+  volume(cmin,cmax,
+    tv=pos(_)-v1;
+    
+    magProjMajor = __dot_prod(tv,vmajor);
+    magProjMinor = __dot_prod(tv,vminor);
+    if(magProjMajor^2/(rmajor^2)+magProjMinor^2/rmajor^2>=1 && magProjMajor^2/(rmajor+width)^2+magProjMinor^2/(rmajor+width)^2<=1 && __dot_prod(tv,v1)>=0 && __dot_prod(pos(_)-p2,-v1)>=0,
+      set(pos(_),material);
+      
+    );
+  );
+);
+tube_elipse(p1,p2,p3,material,width,rminor) ->(
+  v1 = p2-p1;
+  v3 = p3-p1;
+  vmajor = v3 - __proj(v3,v1);
+  rmajor = __norm(vmajor);
+  magv1=norm(v1);
+  cmin=l(0,0,0);
+  cmax=l(0,0,0);
+  loop(3,
+    dn = sin(acos(get(v1,_)/magv1))*max(rmajor,rminor);
+    if( get(v1,_)>=0,
+      put(cmin, _, floor(get(p1,_)-dn));
+      put(cmax, _, ceil(get(p2,_)+dn));
+    );
+    if( get(v1,_)<0,
+      put(cmin, _, floor(get(p2, _) - dn));
+      put(cmax, _, ceil(get(p1, _) + dn));
+    );
+  );
+  vminor = rminor*__normalize(__cross_prod(vmajor,v1));
+  volume(cmin,cmax,
+    tv=pos(_)-v1;
+    magProjMajor = __dot_prod(tv,vmajor);
+    magProjMinor = __dot_prod(tv,vminor);
+    //this long if statement is the eqivlent of the check function from the python ver.
+    if(magProjMajor^2/(rmajor^2)+magProjMinor^2/rminor^2>=1 && magProjMajor^2/(rmajor+width)^2+magProjMinor^2/(rminor+width)^2<=1 && __dot_prod(tv,v1)>=0 && __dot_prod(pos(_)-p2,-v1)>=0,
+      set(pos(_),material);
+    );
+  );
+);
 ////// Snowball eraser //////
 
 global_trace_distance = 100;
@@ -550,12 +613,13 @@ __config() -> {
 		'line <block> <width>' -> _(b, w) -> __callif('line', b, w/2),
 		'line <block> fast' -> _(b) -> __callif('line_fast', b),
 		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
-
+    'tube <block> <width> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
+    'tube <block> <width> circle' -> _(b, w) -> __callif('tube_circle', b, w),
 		'distance' -> _() -> __callif('distance'),
 
 		'undo <actions>' -> 'undo',
 		'undo jump <actions>' -> 'go_back_stories',
-
+    
 		'markers reset' -> 'reset_positions',
 		'markers toggle' -> 'toggle_show_pos',
 		'markers set <index>' -> 'set_pos',
@@ -567,6 +631,7 @@ __config() -> {
 		'width' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,3,5]},
 		'length' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,12,24]},
 		'index' -> {'type' -> 'int', 'min' -> 1, 'max'->3, 'suggest'->[1,2,3]},
+    'rminor' -> {'type' -> 'double', 'min' -> 0, 'suggest'->[5,8.5,12.4]}
 	},
 };
 
@@ -600,6 +665,8 @@ global_points_ammount = {
 	'line' -> 2,
 	'line_fast' -> 2,
 	'line_sight' -> 1,
-	'distance' -> 2
+	'distance' -> 2,
+  'tube_circle' -> 3,
+  'tube_elipse' -> 3
 };
 
