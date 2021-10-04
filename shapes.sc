@@ -295,64 +295,25 @@ tube_circle(p1,p2,p3,material,width) ->(
   v3 = p3-p1;
   vmajor = v3 - __proj(v3,v1);
   rmajor = __norm(vmajor);
-  rminor = rmajor;
-  magv1=__norm(v1);
-  cmin=l(0,0,0);
-  cmax=l(0,0,0);
-  loop(3,
-    
-    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+width);
-    print('dn = '+str(dn));
-    if( get(v1,_)>=0,
-      put(cmin, _, floor(get(p1,_)-dn));
-      put(cmax, _, ceil(get(p2,_)+dn));
-    );
-    if( get(v1,_)<0,
-      put(cmin, _, floor(get(p2, _) - dn));
-      put(cmax, _, ceil(get(p1, _) + dn));
-    );
-  );
-  print(str(cmin));
-  print(str(cmax));
-  hminor = __normalize(__cross_prod(vmajor,v1));
-  hmajor = __normalize(vmajor);
-  //print(str(hminor)+','+str(hmajor));
-  volume(cmin,cmax,
-    tv=pos(_)-p1;
-    tp=pos(_);
-    magProjMajor = __dot_prod(tv,hmajor);
-    magProjMinor = __dot_prod(tv,hminor);
-    
-    //this long if statement is the eqivlent of the check function from the python ver.
-    //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1;
-    //outside=((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1;
-    //print(str((magProjMajor)^2/(rmajor+width)^2)+'+'+str(magProjMinor));
-    //print(str(inside)+','+str(outside)+':'+str(tp));
-    started = (__dot_prod(tv,v1))>=0;
-    notended = (__dot_prod(tp-p2, -1*v1))>=0;
-    if( (((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1 &&
-          ((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1 
-          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
-      set(pos(_),material),
-      continue()
-    );
-    
-    
+  tube_elipse(p1,p2,p3,material,width,rmajor);
   );
 );
 
 tube_elipse(p1,p2,p3,material,width,rminor) ->(
-  v1 = p2-p1;
+  v1 = p2-p1; //calculates the vectors between the various points
   v3 = p3-p1;
-  vmajor = v3 - __proj(v3,v1);
+  vmajor = v3 - __proj(v3,v1); //calculates the portion of the v3 vector perpendicular to v1
   rmajor = __norm(vmajor);
+  print("drawing with Rmajor of "+str(rmajor));
   magv1=__norm(v1);
-  cmin=l(0,0,0);
-  cmax=l(0,0,0);
+  cmin=[0,0,0];
+  cmax=[0,0,0];
+  //this section calculates bounding boxes for the maximum possible area the object could be using
+  //it cacluates x,y,z in that order
   loop(3,
     
     dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+width);
-    print('dn = '+str(dn));
+    
     if( get(v1,_)>=0,
       put(cmin, _, floor(get(p1,_)-dn));
       put(cmax, _, ceil(get(p2,_)+dn));
@@ -362,8 +323,9 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
       put(cmax, _, ceil(get(p1, _) + dn));
     );
   );
-  print(str(cmin));
-  print(str(cmax));
+  // the following are normalized vectors for the major and minor axis
+  // h in their name stands for hat as a vector with a hat on it is normalized in standard notation
+  // this effectively allows the vectors to act like the x and y axis of a normal 2d plane 
   hminor = __normalize(__cross_prod(vmajor,v1));
   hmajor = __normalize(vmajor);
   //print(str(hminor)+','+str(hmajor));
@@ -373,17 +335,18 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
     magProjMajor = __dot_prod(tv,hmajor);
     magProjMinor = __dot_prod(tv,hminor);
     
-    //this long if statement is the eqivlent of the check function from the python ver.
+    //These commented out boolan assignements show the various parts of the checks done in the volume call
     //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1;
     //outside=((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1;
-    //print(str((magProjMajor)^2/(rmajor+width)^2)+'+'+str(magProjMinor));
-    //print(str(inside)+','+str(outside)+':'+str(tp));
-    started = (__dot_prod(tv,v1))>=0;
-    notended = (__dot_prod(tp-p2, -1*v1))>=0;
-    if( (((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1 &&
-          ((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1 
-          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
-      set(pos(_),material),
+    //
+    //
+    //started = (__dot_prod(tv,v1))>=0;
+    //notended = (__dot_prod(tp-p2, -1*v1))>=0;
+    // these are now arranged to run the most exclusive operation first that way once that fails it skips the other checks and continues
+    if( (((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1 && 
+          ((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1 &&
+          (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+      set(pos(_),material), // I'd really like to add a feature to do replace more like the vanilla /fill command 
       continue()
     );
     
@@ -652,8 +615,8 @@ __config() -> {
 		'line <block> <width>' -> _(b, w) -> __callif('line', b, w/2),
 		'line <block> fast' -> _(b) -> __callif('line_fast', b),
 		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
-    'tube <block> <width> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
-    'tube <block> <width> circle' -> _(b, w) -> __callif('tube_circle', b, w),
+    'tube <block> <thickness> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
+    'tube <block> <thickness> circle' -> _(b, w) -> __callif('tube_circle', b, w),
 		'distance' -> _() -> __callif('distance'),
 
 		'undo <actions>' -> 'undo',
@@ -670,7 +633,8 @@ __config() -> {
 		'width' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,3,5]},
 		'length' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,12,24]},
 		'index' -> {'type' -> 'int', 'min' -> 1, 'max'->3, 'suggest'->[1,2,3]},
-    'rminor' -> {'type' -> 'float', 'min' -> 0, 'suggest'->[5,8.5,12.4]}//need to set this as a float or something
+    'thickness' - -> {'type' -> 'float', 'min' -> 0, 'suggest'->[5,8.5,12.4]}
+    'rminor' -> {'type' -> 'float', 'min' -> 0, 'suggest'->[5,8.5,12.4]}
 	},
 };
 
