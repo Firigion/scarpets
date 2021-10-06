@@ -46,6 +46,7 @@ Shapes are available under the subcommand `/shapes <shape_name> <block> <options
 * `cylinder <block> elliptic <rminor>`: this draws a cylindroid between `pos1` and `pos2` with a major radius defined by the position of `pos3` where `pos3` is inline with the edge and a minor radius is defined by argument `rminor`.
 * `cylinder <block>`: this draws a cylinder between `pos1` and `pos2` with a major radius defined by the position of `pos3` where `pos3` is inline with the edge
 
+
 ### Extras
 You can mesure the distance between `pos1` and `pos2`, like with carpet's brown carpet, using `/shapes distance`. 
 
