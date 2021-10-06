@@ -33,6 +33,10 @@ To load it either run `/script load shapes` or paste the code inside `shapes.mcc
 * **Disc**: like ring, but full.
 * **Line**: it's like intersecting two planes. Literally, that's how it's done in the app. Line will only use the positions 1 and 2 to draw, ignoring position 3.
 * **Fast line**: this is an alternative line algorithm. It's way faster for very big lines, so if you need to draw a 200 block line, use this. It might even work into unloaded chunks, not sure. Downside is, the `width` parameter does nothing. I kept it to keep the signatures of all shapes even.
+* **tube elipse**: this draws a tube with an elliptic profile between p1 and p2 (hollow center) with a major radius defined by the position of p3 where p3 is inline with the inner edge and a minor radius defined by argument, width is also defined by argument.
+* **tube circle**: this draws a tube between p1 and p2 (hollow center) with a radius defined by the position of p3 where p3 is inline with the inner edge and a width defined by argument.
+* **cylinder elliptic**: this draws a cylindroid between p1 and p2 with a major radius defined by the position of p3 where p3 is inline with the edge and a minor radius is defined by argument.
+* **cylinder**: this draws a cylinder between p1 and p2 with a major radius defined by the position of p3 where p3 is inline with the edge and a minor radius defined by argument.
 
 There's an extra line feature that creates a straight line from position 1 and into the direction the player is looking. The signature is `line_sight(length, material)`. You can also query the distance between positions 1 and 2 via the `distance` command and delete connected regions by clicking them with a snowball.
 

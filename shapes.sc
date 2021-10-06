@@ -353,6 +353,67 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
     
   );
 );
+
+cylinder(p1,p2,p3,material) -> (
+  //precacluates the rmajor value so that rminor can be set equal making a cricle
+  v1 = p2-p1;
+  v3 = p3-p1;
+  vmajor = v3 - __proj(v3,v1);
+  rmajor = __norm(vmajor);
+  cylinder_elliptic(p1,p2,p3,material,rmajor)
+);
+
+cylinder_elliptic(p1,p2,p3,material,rminor) ->(
+  v1 = p2-p1; //calculates the vectors between the various points
+  v3 = p3-p1;
+  vmajor = v3 - __proj(v3,v1); //calculates the portion of the v3 vector perpendicular to v1
+  rmajor = __norm(vmajor);
+  print("drawing with Rmajor of "+str(rmajor));
+  magv1=__norm(v1);
+  cmin=[0,0,0];
+  cmax=[0,0,0];
+  //this section calculates bounding boxes for the maximum possible area the object could be using
+  //it cacluates x,y,z in that order
+  loop(3,
+    
+    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor));
+    
+    if( get(v1,_)>=0,
+      put(cmin, _, floor(get(p1,_)-dn));
+      put(cmax, _, ceil(get(p2,_)+dn));
+    );
+    if( get(v1,_)<0,
+      put(cmin, _, floor(get(p2, _) - dn));
+      put(cmax, _, ceil(get(p1, _) + dn));
+    );
+  );
+  // the following are normalized vectors for the major and minor axis
+  // h in their name stands for hat as a vector with a hat on it is normalized in standard notation
+  // this effectively allows the vectors to act like the x and y axis of a normal 2d plane 
+  hminor = __normalize(__cross_prod(vmajor,v1));
+  hmajor = __normalize(vmajor);
+  //print(str(hminor)+','+str(hmajor));
+  volume(cmin,cmax,
+    tv=pos(_)-p1;
+    tp=pos(_);
+    magProjMajor = __dot_prod(tv,hmajor);
+    magProjMinor = __dot_prod(tv,hminor);
+    
+    //These commented out boolan assignements show the various parts of the checks done in the volume call
+    //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))<=1;
+    //started = (__dot_prod(tv,v1))>=0;
+    //notended = (__dot_prod(tp-p2, -1*v1))>=0;
+    // these are now arranged to run the most exclusive operation first that way once that fails it skips the other checks and continues
+    if( (((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))<=1 &&
+          (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+      set(pos(_),material), // I'd really like to add a feature to do replace more like the vanilla /fill command 
+      continue()
+    );
+    
+    
+  );
+);
+
 ////// Snowball eraser //////
 
 global_trace_distance = 100;
@@ -617,6 +678,8 @@ __config() -> {
 		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
     'tube <block> <thickness> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
     'tube <block> <thickness> circle' -> _(b, w) -> __callif('tube_circle', b, w),
+    'cylinder <block>' -> _(b) -> __callif('cylinder', b),
+    'cylinder <block> elliptic <rminor>' -> _(b, r) -> __callif('cylinder_elliptic', b, r),
 		'distance' -> _() -> __callif('distance'),
 
 		'undo <actions>' -> 'undo',
@@ -670,6 +733,8 @@ global_points_ammount = {
 	'line_sight' -> 1,
 	'distance' -> 2,
   'tube_circle' -> 3,
-  'tube_elipse' -> 3
+  'tube_elipse' -> 3,
+  'cylinder' -> 3,
+  'cylinder_elliptic' -> 3
 };
 
