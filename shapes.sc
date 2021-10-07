@@ -721,6 +721,8 @@ global_points_ammount = {
 	'line_sight' -> 1,
 	'distance' -> 2,
   'tube_circle' -> 3,
-  'tube_elipse' -> 3
+  'tube_elipse' -> 3,
+  'cylinder' -> 3,
+  'cylinder_elliptic' -> 3
 };
 
