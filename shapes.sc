@@ -290,20 +290,14 @@ line_sight(p1, material, length) -> (
 	line(pos1, end_point, material, 1);
 );
 
-tube_circle(p1,p2,p3,material,width) ->(
-  v1 = p2-p1;
-  v3 = p3-p1;
-  vmajor = v3 - __proj(v3,v1);
-  rmajor = __norm(vmajor);
-  rminor = rmajor;
-  tube_elipse(p1,p2,p3,material,width,rminor)
-);
-
 tube_elipse(p1,p2,p3,material,width,rminor) ->(
   v1 = p2-p1;
   v3 = p3-p1;
   vmajor = v3 - __proj(v3,v1);
+  cylinder=false;
   rmajor = __norm(vmajor);
+  if(rminor == null,rminor=rmajor);
+  if(width == null,cylinder=true);
   magv1=__norm(v1);
   cmin=[0,0,0];
   cmax=[0,0,0];
@@ -325,6 +319,9 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
   rminorWp2=(rminor+width)^2;
   rmajorp2=rmajor^2;
   rminorp2=rminor^2;
+  if(min([rmajor+width,rminor+width])<=0,
+    cylinder=true
+  );
   volume(cmin,cmax,
     tv=pos(_)-p1;
     tp=pos(_);
@@ -338,70 +335,28 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
     //outside=((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1;
     //started = (__dot_prod(tv,v1))>=0;
     //notended = (__dot_prod(tp-p2, -1*v1))>=0;
+    if(width>=0,
     if( (((magProjMajorp2)/rmajorp2+(magProjMinorp2)/rminorp2)>=1 &&
-          (magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)<=1 
+          (cylinder||(magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)<=1) 
           && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
       set(pos(_),material),
       continue()
     );
     
-    
-  );
-);
-cylinder(p1,p2,p3,material) -> (
-  v1 = p2-p1;
-  v3 = p3-p1;
-  vmajor = v3 - __proj(v3,v1);
-  rmajor = __norm(vmajor);
-  rminor = rmajor;
-  cylinder_elliptic(p1,p2,p3,material,rminor)
-);
-cylinder_elliptic(p1,p2,p3,material,rminor) ->(
-  v1 = p2-p1;
-  v3 = p3-p1;
-  vmajor = v3 - __proj(v3,v1);
-  rmajor = __norm(vmajor);
-  magv1=__norm(v1);
-  cmin=[0,0,0];
-  cmax=[0,0,0];
-  loop(3,
-    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor));
-    if(v1:_>=0,
-      put(cmin, _, floor(p1:_-dn));
-      put(cmax, _, ceil(p2:_+dn));
     );
-    if(v1:_<0,
-      put(cmin, _, floor(p2:_ - dn));
-      put(cmax, _, ceil(p1:_ + dn));
-    );
-  );
-
-  hminor = __normalize(__cross_prod(vmajor,v1));
-  hmajor = __normalize(vmajor);
-  //print(str(hminor)+','+str(hmajor));
-  rmajorp2=rmajor^2;
-  rminorp2=rminor^2;
-  volume(cmin,cmax,
-    tv=pos(_)-p1;
-    tp=pos(_);
-    magProjMajor = __dot_prod(tv,hmajor);
-    magProjMinor = __dot_prod(tv,hminor);
-    magProjMajorp2=magProjMajor^2;
-    magProjMinorp2=magProjMinor^2;
-    
-    //these functions define where the shape gets drawn
-    //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))<=1;
-    //started = (__dot_prod(tv,v1))>=0;
-    //notended = (__dot_prod(tp-p2, -1*v1))>=0;
+        if(width<0,
     if( (((magProjMajorp2)/rmajorp2+(magProjMinorp2)/rminorp2)<=1 &&
-          (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+          (cylinder||(magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)>=1) 
+          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
       set(pos(_),material),
       continue()
     );
     
+    );
     
   );
 );
+
 
 ////// Snowball eraser //////
 
@@ -665,10 +620,10 @@ __config() -> {
 		'line <block> <width>' -> _(b, w) -> __callif('line', b, w/2),
 		'line <block> fast' -> _(b) -> __callif('line_fast', b),
 		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
-    'tube <block> <width> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
-    'tube <block> <width> circle' -> _(b, w) -> __callif('tube_circle', b, w),
-    'cylinder <block>' -> _(b) -> __callif('cylinder', b),
-    'cylinder <block> elliptic <rminor>' -> _(b, r) -> __callif('cylinder_elliptic', b, r),
+    'tube <block> <thickness> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
+    'tube <block> <thickness> circle' -> _(b, w) -> __callif('tube_elipse', b, w,null),
+    'tube <block> solid circle' -> _(b) -> __callif('tube_elipse', b, null,null),
+    'tube <block> solid elipse <rminor>' -> _(b,r) -> __callif('tube_elipse', b, null,r),
 		'distance' -> _() -> __callif('distance'),
 
 		'undo <actions>' -> 'undo',
@@ -685,7 +640,8 @@ __config() -> {
 		'width' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,3,5]},
 		'length' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,12,24]},
 		'index' -> {'type' -> 'int', 'min' -> 1, 'max'->3, 'suggest'->[1,2,3]},
-    'rminor' -> {'type' -> 'int', 'min' -> 0, 'suggest'->[5,8.5,12.4]}
+    'rminor' -> {'type' -> 'float', 'min' -> 0, 'suggest'->[5,8.5,12.4]},
+    'thickness' -> {'type' -> 'float', 'suggest'->[1,2,3,-2]}
 	},
 };
 
