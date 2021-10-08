@@ -299,61 +299,63 @@ tube_elipse(p1,p2,p3,material,width,rminor) ->(
   if(rminor == null,rminor=rmajor);
   if(width == null,cylinder=true);
   magv1=__norm(v1);
-  cmin=[0,0,0];
+  cmin=[0,0,0];//initilizes corners for volume builtin
   cmax=[0,0,0];
+  //detrmines bounding box arround shape so that it can be itterated over by the volume builtin
   loop(3,
-    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+width);
+    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+max(width,0));
     if(v1:_>=0,
       put(cmin, _, floor(p1:_-dn));
       put(cmax, _, ceil(p2:_+dn));
-    );
-    if(v1:_<0,
+      ,
       put(cmin, _, floor(p2:_ - dn));
       put(cmax, _, ceil(p1:_ + dn));
     );
   );
+  //the h in hminor and hmajor represent the hat notation for unit vectors
   hminor = __normalize(__cross_prod(vmajor,v1));
   hmajor = __normalize(vmajor);
   //print(str(hminor)+','+str(hmajor));
+  //computing some values before the loop is run to reduce loop time
+  //these are largely the denominator in the functions for drawing circles
   rmajorWp2=(rmajor+width)^2;
   rminorWp2=(rminor+width)^2;
   rmajorp2=rmajor^2;
   rminorp2=rminor^2;
-  if(min([rmajor+width,rminor+width])<=0,
-    cylinder=true
-  );
+  cylinder = min([rmajor+width,rminor+width])<=0;//checks if it will be solid
+  //this is needed because if rX + width = 0 then we get a devide by zero error and 
+  //if its less than zero we get the effective value increasing again since it gets squared
+  
   volume(cmin,cmax,
-    tv=pos(_)-p1;
-    tp=pos(_);
+    tv=pos(_)-p1;//create a 'test vector' relative to p1
+    tp=pos(_); //create a tp 
+    //cacluates the magnitude of the test vector in the directions of the major and minor axis
     magProjMajor = __dot_prod(tv,hmajor);
     magProjMinor = __dot_prod(tv,hminor);
     magProjMajorp2=magProjMajor^2;
     magProjMinorp2=magProjMinor^2;
     
-    //these functions define where the shape gets drawn
+    //these functions define where the shape gets drawn they work for width greater than zero 
     //inside=((magProjMajor^2)/(rmajor^2)+(magProjMinor^2)/(rminor^2))>=1;
     //outside=((magProjMajor)^2/(rmajor+width)^2+(magProjMinor)^2/(rminor+width)^2)<=1;
     //started = (__dot_prod(tv,v1))>=0;
     //notended = (__dot_prod(tp-p2, -1*v1))>=0;
+    //the if statment here checks for the width condition so that the inner wall can become the outer wall and vice versa
     if(width>=0,
-    if( (((magProjMajorp2)/rmajorp2+(magProjMinorp2)/rminorp2)>=1 &&
-          (cylinder||(magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)<=1) 
-          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
-      set(pos(_),material),
-      continue()
+      if( ((magProjMajorp2/rmajorp2+magProjMinorp2/rminorp2)>=1 &&
+            (cylinder||(magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)<=1) 
+            && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+        set(pos(_),material),
+        continue()
+      );
+    ,
+      if( (((magProjMajorp2)/rmajorp2+(magProjMinorp2)/rminorp2)<=1 &&
+            (cylinder||(magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)>=1) 
+            && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
+        set(pos(_),material),
+        continue()
+      );    
     );
-    
-    );
-        if(width<0,
-    if( (((magProjMajorp2)/rmajorp2+(magProjMinorp2)/rminorp2)<=1 &&
-          (cylinder||(magProjMajorp2/rmajorWp2+magProjMinorp2/rminorWp2)>=1) 
-          && (__dot_prod(tv,v1))>=0 && (__dot_prod(tp-p2, -1*v1))>=0 ),
-      set(pos(_),material),
-      continue()
-    );
-    
-    );
-    
   );
 );
 
@@ -620,10 +622,8 @@ __config() -> {
 		'line <block> <width>' -> _(b, w) -> __callif('line', b, w/2),
 		'line <block> fast' -> _(b) -> __callif('line_fast', b),
 		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
-    'tube <block> <thickness> elipse <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
-    'tube <block> <thickness> circle' -> _(b, w) -> __callif('tube_elipse', b, w,null),
-    'tube <block> solid circle' -> _(b) -> __callif('tube_elipse', b, null,null),
-    'tube <block> solid elipse <rminor>' -> _(b,r) -> __callif('tube_elipse', b, null,r),
+    'tube <block> <thickness> <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
+    'tube <block> <thickness>' -> _(b, w) -> __callif('tube_elipse', b, w,null),
 		'distance' -> _() -> __callif('distance'),
 
 		'undo <actions>' -> 'undo',
