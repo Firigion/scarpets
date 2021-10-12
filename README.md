@@ -41,10 +41,7 @@ Shapes are available under the subcommand `/shapes <shape_name> <block> <options
 * `line <block> [<width>]`: it's like intersecting two planes. Literally, that's how it's done in the app. Line will only use positions 1 and 2 to draw, ignoring position 3.
 * `line <block> fast`: this is an alternative line algorithm. It's way faster for very big lines, so if you need to draw a 200 block line, use this. It might even work into unloaded chunks, not sure.
 * `line <block> sight <length>`: this generates a line in a cartesian direction startng from `pos1` and extending in the direction the player is looking at for `length` blocks. It ignores `pos2` and `pos3`.
-* `tube <block> <thickness> elipse <rminor>`: this draws a tube with an elliptic profile between `pos1` and `pos2` (hollow center) with a major radius defined by the position of `pos3` where `pos3` is inline with the inner edge and a minor radius defined by argument `rminor`, width is also defined by argument `thickness` from the edge which can be negative.
-* `tube <block> <thickness> circle`: this draws a tube between `pos1` and `pos2` (hollow center) with a radius defined by the position of `pos3` where `pos3` is inline with the inner edge and a width defined by argument `thickness` from the edge which can be negative.
-* `tube <block> solid elipse <rminor>`: this draws a tube with an elliptic profile between `pos1` and `pos2` (solid center) with a major radius defined by the position of `pos3` where `pos3` is inline with the edge and a minor radius defined by argument `rminor`.
-* `tube <block> solid circle`: this draws a tube between `pos1` and `pos2` (solid center) with a radius defined by the position of `pos3` where `pos3` is inline with the edge`.
+* `tube <block> <thickness> [rminor]`: this draws a tube with a profile defined by `pos3` for the majorr axis and `rminor` if provided or circular otherwise with a radius defined by the projection of `pos3' onto the plane between `pos1` and `pos2` (hollow center) with a major radius defined by the position of `pos3` where `pos3` is inline with one edge and a the other edge is set by `thickness`. For a solid profile make either of the radii minus thickness less than zero.
 
 
 ### Extras
