@@ -41,7 +41,7 @@ Shapes are available under the subcommand `/shapes <shape_name> <block> <options
 * `line <block> [<width>]`: it's like intersecting two planes. Literally, that's how it's done in the app. Line will only use positions 1 and 2 to draw, ignoring position 3.
 * `line <block> fast`: this is an alternative line algorithm. It's way faster for very big lines, so if you need to draw a 200 block line, use this. It might even work into unloaded chunks, not sure.
 * `line <block> sight <length>`: this generates a line in a cartesian direction startng from `pos1` and extending in the direction the player is looking at for `length` blocks. It ignores `pos2` and `pos3`.
-* `tube <block> <thickness> [rminor]`: this draws a tube with a profile defined by `pos3` for the majorr axis and `rminor` if provided or circular otherwise with a radius defined by the projection of `pos3' onto the plane between `pos1` and `pos2` (hollow center) with a major radius defined by the position of `pos3` where `pos3` is inline with one edge and a the other edge is set by `thickness`. For a solid profile make either of the radii minus thickness less than zero.
+* `tube <block> <thickness> [rminor]`: this draws a tube (cylindrical shell without the caps) with length defined by `pos1` and `pos2`, and radius defined by the distance from `pos3` to the line that joins `pos1` and `pos2`. The optional `rminor` parameter defines a secondary radius, enabling cylinders with eliptical bases instead of circular ones. Positive values of `tickness` will make a shell that starts at the radius and grows outwards, negative ones will grow inwards.
 
 
 ### Extras
