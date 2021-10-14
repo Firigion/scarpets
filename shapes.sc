@@ -661,7 +661,6 @@ __callif(fun, ...args) -> (
 		);
 		positions += pos;
 	);
-	print(positions);
 	//if positions were set, call function
 	call(fun, ...positions, ...args);
 );
