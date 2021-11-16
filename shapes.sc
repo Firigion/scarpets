@@ -289,7 +289,88 @@ line_sight(p1, material, length) -> (
 	
 	line(pos1, end_point, material, 1);
 );
+tube_display(p1,p2,p3,width,rminor) ->(
+  p1=p1+[0.5,0.5,0.5];
+  v1 = p2-p1;
+  v3 = p3-p1;
+  color=0x0000FF80;
+  vmajor = v3 - __proj(v3,v1);
+  cylinder=false;
+  rmajor = __norm(vmajor);
+  if(rminor == null,rminor=rmajor);
+  if(width == null,cylinder=true);
+  magv1=__norm(v1);
+  cmin=[0,0,0];//initilizes corners for volume builtin
+  cmax=[0,0,0];
+  //detrmines bounding box arround shape so that it can be itterated over by the volume builtin
+  loop(3,
+    dn = sin(acos(get(v1,_)/magv1))*(max(rmajor,rminor)+max(width,0));
+    if(v1:_>=0,
+      put(cmin, _, floor(p1:_-dn));
+      put(cmax, _, ceil(p2:_+dn));
+      ,
+      put(cmin, _, floor(p2:_ - dn));
+      put(cmax, _, ceil(p1:_ + dn));
+    );
+  );
+  draw_shape('box', 15, 'from', cmin, 'to', cmax, 'color', 0x00FFFFFF, 'line', 3, 'fill', 0x00FFFF12);
+  
+  //the h in hminor and hmajor represent the hat notation for unit vectors
+  hminor = __normalize(__cross_prod(vmajor,v1));
+  hmajor = __normalize(vmajor);
+  //print(str(hminor)+','+str(hmajor));
+  //computing some values before the loop is run to reduce loop time
+  //these are largely the denominator in the functions for drawing circles
+  rmajorWp2=(rmajor+width)^2;
+  rminorWp2=(rminor+width)^2;
+  rmajorp2=rmajor^2;
+  rminorp2=rminor^2;
+  cylinder = min([rmajor+width,rminor+width])<=0;//checks if it will be solid
+  nseg=ceil(max([rmajor,rminor]))*4+3;
+  vminor=rminor*hminor;
+  durration=200;
+  theta=acos(v1:2/__norm([v1:0,v1:2]));
+  if(v1:0>0,theta=theta*-1);
+  phi=90.0-acos(-v1:1/__norm(v1));
+  print('facing: ('+str(theta)+'/'+str(phi)+')');
+  print('length: '+str(__norm(v1)));
+  //print(phi);
+  loop(nseg,
+    ta=_*360/nseg;
+    tb=(_+1)*360/nseg;
+    pa=vminor*sin(ta)+vmajor*cos(ta)+p1;
+    pb=vminor*sin(tb)+vmajor*cos(tb)+p1;
+    draw_shape('line',durration,'from',pa,'to',pb,'color', color);
+    draw_shape('line',durration,'from',pa+v1,'to',pb+v1,'color', color);
+    if(false==cylinder,
+      pc=hminor*(width+rminor)*sin(ta)+hmajor*(width+rmajor)*cos(ta)+p1;
+      pd=hminor*(width+rminor)*sin(tb)+hmajor*(width+rmajor)*cos(tb)+p1;
+      draw_shape('line',durration,'from',pc,'to',pd,'color', color);
+      draw_shape('line',durration,'from',pc+v1,'to',pd+v1,'color', color);
+    );
+  );
+  loop(4,
+  if(false==cylinder,
+    if(_%2,
+      pprimary=vminor;psecondary=hminor*(width+rminor),
+      pprimary=vmajor;psecondary=hmajor*(width+rmajor)
+    );
+    if(_>1,inv=-1,inv=1);
+    draw_shape('line',durration,'from',inv*pprimary+p1,'to',inv*psecondary+p1,'color', color);
+    draw_shape('line',durration,'from',inv*pprimary+p1,'to',inv*pprimary+p2,'color', color);
+    draw_shape('line',durration,'from',inv*pprimary+p2,'to',inv*psecondary+p2,'color', color);
+    draw_shape('line',durration,'from',inv*psecondary+p2,'to',inv*psecondary+p1,'color', color);
+    
 
+  ));
+  draw_shape('line',durration,'from',p1,'to',p2,'color', color);
+  draw_shape('line',durration,'from',p1,'to',p1+vmajor,'color', color);
+  draw_shape('line',durration,'from',p1+vmajor,'to',p2+vmajor,'color', color);
+  draw_shape('line',durration,'from',p1,'to',p1+vminor,'color', color);
+  draw_shape('line',durration,'from',p2+vminor,'to',p1+vminor,'color', color);
+  
+
+);
 tube_elipse(p1,p2,p3,material,width,rminor) ->(
   v1 = p2-p1;
   v3 = p3-p1;
@@ -525,7 +606,41 @@ __on_player_uses_item(player, item_tuple, hand) -> (
 __all_set(dim) -> (
 	if(all(global_positions:dim, _!=null), global_all_set:dim = true);
 );
+save_markers(setindex, filename) -> (
+  
+  dim = player() ~ 'dimension';
 
+	points = global_positions:dim;
+  print(points);
+  print(list_files('', 'json'));
+  try(pointlib=read_file(filename,'json'),pointlib=m());
+  if(type(pointlib) != 'map',pointlib=m());
+  //points=[[4,5,2],[3,23,1],[3,1,3]];setindex=3;pointlib=m();pointlib:setindex=points;pointlib;
+  pointlib:str(setindex)=points;
+  print(pointlib);
+  print(type(pointlib));
+  write_file(filename,'json',pointlib);
+  print('saved markers to file: '+filename+' at index: '+str(setindex))
+);
+load_markers(setindex,filename) -> (
+  dim = player() ~ 'dimension';
+  try(
+    pointlib=read_file(filename,'json');
+    for(global_armor_stands:dim, 
+      __remove_mark(_i, dim);
+		);
+    global_positions:dim=pointlib:str(setindex);
+    __all_set(player() ~ 'dimension');
+    print('loaded points '+str(pointlib:str(setindex)));
+    if(global_show_pos,
+		 // summon the markers
+			for(global_positions:dim, 
+				if(_!=null, __mark( (_i+1) , _, dim) );
+			)
+    )
+    ,print('loading points failed')
+    )
+);
 global_positions = m();
 global_all_set = m();
 global_armor_stands = m();
@@ -535,6 +650,7 @@ __reset_positions('the_nether');
 __reset_positions('the_end');
 
 
+  
 
 ////// Undo stuff ///////
 
@@ -624,16 +740,18 @@ __config() -> {
 		'line <block> sight <length>' -> _(b, l) -> __callif('line_sight', b, l),
     'tube <block> <thickness> <rminor>' -> _(b, w, r) -> __callif('tube_elipse', b, w, r),
     'tube <block> <thickness>' -> _(b, w) -> __callif('tube_elipse', b, w,null),
+    'tube display <thickness> <rminor>' -> _(w, r) -> __callif('tube_display', w,r),
+    'tube display <thickness>' -> _(w) -> __callif('tube_display', w,null),
 		'distance' -> _() -> __callif('distance'),
-
+    'markers save <setnum> <savename>' -> 'save_markers',
+    'markers load <setnum> <savename>' -> 'load_markers',
 		'undo <actions>' -> 'undo',
 		'undo jump <actions>' -> 'go_back_stories',
-    
 		'markers reset' -> 'reset_positions',
 		'markers toggle' -> 'toggle_show_pos',
 		'markers set <index>' -> 'set_pos',
 		'markers get' -> 'get_pos',
-
+  
 	},
 	'arguments' -> {
 		'actions' -> {'type'->'int', 'min'->1, 'suggest'->[1,3,5]},
@@ -641,7 +759,11 @@ __config() -> {
 		'length' -> {'type' -> 'int', 'min' -> 1, 'suggest'->[1,12,24]},
 		'index' -> {'type' -> 'int', 'min' -> 1, 'max'->3, 'suggest'->[1,2,3]},
     'rminor' -> {'type' -> 'float', 'min' -> 0, 'suggest'->[5,8.5,12.4]},
-    'thickness' -> {'type' -> 'float', 'suggest'->[1,2,3,-2]}
+    'thickness' -> {'type' -> 'float', 'suggest'->[1,2,3,-2]},
+    'savename' -> {'type' -> 'string','suggest'->['markers_0','markers_1']},
+    'setnum' -> {'type' -> 'int', 'min' -> 0, 'suggest'->[0,1,2,5,7]}
+    
+    
 	},
 };
 
@@ -661,7 +783,6 @@ __callif(fun, ...args) -> (
 		);
 		positions += pos;
 	);
-	print(positions);
 	//if positions were set, call function
 	call(fun, ...positions, ...args);
 );
@@ -679,6 +800,6 @@ global_points_ammount = {
   'tube_circle' -> 3,
   'tube_elipse' -> 3,
   'cylinder' -> 3,
-  'cylinder_elliptic' -> 3
+  'tube_display' -> 3//,
+  //'save_markers' -> 3
 };
-
