@@ -5,8 +5,8 @@ global_tool = 'stone_sword';
 /////// Replace stuff
 
 __get_states(b) -> (
-	properties = block_properties(pos(b));
-	pairs = map(properties, l(_, property(pos(b), _)) );
+	properties = keys(block_state(pos(b)));
+	pairs = map(properties, l(_, block_state(pos(b), _)) );
 );
 
 __make_properies_string(pairs) -> (
@@ -29,7 +29,7 @@ __replace_one_block(b, to_replace, replace_with) -> (
 );
 
 __replace_one_block_filt(b, to_replace, replace_with, property, value) -> (
-	if(b == to_replace && property(b, property)==value, 
+	if(b == to_replace && block_state(b, property)==value, 
 		__set_with_state(b, replace_with)
 	);
 );
