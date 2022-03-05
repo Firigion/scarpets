@@ -1,6 +1,3 @@
-__command() -> null;
-
-// to store marker positions and object handles
 global_settings = {
 						 'show_pos' -> true ,
 						 'paste_with_air' -> false ,
@@ -541,7 +538,9 @@ __interlace_lists(l1, l2) -> (
 // ---- Draw functions ----
 
 star(outer_radius, inner_radius, n_points, phase, material) -> (
-
+	for([outer_radius, inner_radius, n_points, phase, material],
+		print([_, type(_)])
+	);
 	dim = player() ~ 'dimension';
 	center = __get_center();
 
@@ -567,7 +566,7 @@ star(outer_radius, inner_radius, n_points, phase, material) -> (
 	
 	__put_into_history(global_this_story, dim); //ensure max history size is not exceeded
 	print(str('Set %d blocks', length(global_this_story) ));
-	return('');
+
 );
 
 
@@ -841,7 +840,7 @@ toggle_slope_mode() -> (
 // generate interactive string for togglable parameter
 __make_toggle_setting(parameter, hover) -> (
 	str_list = l(
-		str('w * %s: ', parameter), 
+		str('w * %s: ', replace(parameter, '_', ' ')), 
 		str('^y %s', hover),
 	);
 	str_list = __extend(str_list, __get_button('true', parameter) );
@@ -857,7 +856,7 @@ __get_inactive_button(value, parameter) -> (
 	l( 
 		str('g [%s] ', value),
 		str('^gb Click to toggle'),
-		str('!/curves toggle_%s', parameter)
+		str('!/curves toggle %s', parameter)
 	)
 );
 
@@ -869,7 +868,7 @@ __get_button(value, parameter) -> (
 // generate interactive string for parameter with options
 __make_value_setting(parameter, hover, options, has_arbitrary_values) -> (
 	str_list = l(
-		str('w * %s: ', parameter), 
+		str('w * %s: ', replace(parameter, '_', ' ')), 
 		str('^y %s', hover),
 	);
 	options_list = [];
@@ -877,7 +876,7 @@ __make_value_setting(parameter, hover, options, has_arbitrary_values) -> (
 			len = length(options_list);
 			options_list:len = str('%sb [%s]', if(global_settings:parameter == _, 'y', 'g',), _);
 			options_list:(len+1) = '^bg Click to set this value';
-			options_list:(len+2) = str('?/curves set_%s %s', parameter, _) 
+			options_list:(len+2) = str('?/curves set %s %s', parameter, _) 
 	);
 	str_list = __extend(str_list, options_list);
 	if( has_arbitrary_values, 
@@ -1380,3 +1379,81 @@ help_polygon() -> (
 	print(player(), format(description2) );
 	print(player(), '');
 );
+
+__config() -> {
+	'commands' -> {
+		'undo <int>' -> 'undo',
+		'go back <int>' -> 'go_back_stories',
+
+		'helix <radius> <pitch> <size> <block>' -> 'helix',
+		'helix reverse <radius> <pitch> <size> <block>' -> 'antihelix',
+		'helix multi <radius> <pitch> <size> <count> <block>' -> 'multihelix',
+		'helix multi reverse <radius> <pitch> <size> <count> <block>' -> 'antimultihelix',
+		'helix preview <radius> <pitch> <size> <time>' -> 'preview_helix',
+		'wave <wavelength> <amplitude> <size> <block>' -> 'wave',
+		'cwave planar <radius> <amplitude> <cycles> <block>' -> 'cwave_planar',
+		'cwave planar partial <radius> <amplitude> <cycles> <from_angle> <to_angle> <block>' -> 'cwave_planar_partial',
+		'cwave transverse <radius> <amplitude> <cycles> <block>' -> 'cwave_transverse',
+		'cwave transverse partial <radius> <amplitude> <cycles> <from_angle> <to_angle> <block>' -> 'cwave_transverse_partial',
+		'star <outer_radius> <inner_radius> <n_points> <angle> <block>' -> 'star',
+		'polygon <radius> <n_points> <angle> <block>' -> 'polygon',
+
+		'helix <radius> <pitch> <size> template' -> ['helix', 'template'],
+		'helix reverse <radius> <pitch> <size> template' -> ['antihelix', 'template'],
+		'helix multi <radius> <pitch> <size> <count> template' -> ['multihelix', 'template'],
+		'helix multi reverse <radius> <pitch> <size> <count> template' -> ['antimultihelix', 'template'],
+		'wave <wavelength> <amplitude> <size> template' -> ['wave', 'template'],
+		'cwave planar <radius> <amplitude> <cycles> template' -> ['cwave_planar', 'template'],
+		'cwave planar partial <radius> <amplitude> <cycles> <from_angle> <to_angle> template' -> ['cwave_planar_partial', 'template'],
+		'cwave transverse <radius> <amplitude> <cycles> template' -> ['cwave_transverse', 'template'],
+		'cwave transverse partial <radius> <amplitude> <cycles> <from_angle> <to_angle> template' -> ['cwave_transverse_partial', 'template'],
+		'star <outer_radius> <inner_radius> <n_points> <angle> template' -> ['star', 'template'],
+		'polygon <radius> <n_points> <angle> template' -> ['polygon', 'template'],
+
+		'soft_replace' -> 'soft_replace',
+		'soft_replace filter <prop> <value>' -> 'soft_replace_filt',
+
+		'positions reset' -> 'reset_positions',
+		'positions show' -> 'toggle_show_pos',
+		'positions set <index>' -> 'set_pos',
+		'positions get' -> 'get_pos',
+
+		'help' -> 'help',
+		'help positions' -> 'help_positions',
+		'help undo' -> 'help_undo',
+		'help brush' -> 'help_brush',
+		'help replace' -> 'help_replace',
+		'help curves' -> 'help_curves',
+		'help helix' -> 'help_helix',
+		'help wave' -> 'help_wave',
+		'help cwave' -> 'help_cwave',
+		'help star' -> 'help_star',
+		'help polygon' -> 'help_polygon',
+
+		'settings' -> 'settings',
+		'toggle slope_mode' -> 'toggle_slope_mode',
+		'toggle replace_block' -> 'toggle_replace_block',
+		'toggle paste_with_air' -> 'toggle_paste_with_air',
+		'set undo_history_size <int>' -> 'set_undo_histoy_size',
+		'set circle_axis <axis>' -> 'set_circle_axis',
+		'set wave_axis <daxis>' -> 'set_wave_axis',
+		'set max_operations_per_tick <int>' -> 'set_max_operations_per_tick',
+		'set max_template_size <size>' -> 'set_max_template_size'
+
+	},
+	'arguments' -> {
+		'radius' -> {'type' -> 'int'},
+		'pitch' -> {'type' -> 'int'},
+		'size' -> {'type' -> 'int'},
+		'amplitude' -> {'type' -> 'int'},
+		'time' -> {'type' -> 'int', 'min'->1},
+		'count' -> {'type' -> 'int'},
+		'points' -> {'type' -> 'int'},
+		'cycles' -> {'type' -> 'float', 'min'->1},
+		'angle' -> {'type' -> 'float'},
+		'wavelength' -> {'type' -> 'float'},
+		'index' -> {'type' -> 'int', 'options' -> [1,2,3]},
+		'axis' -> {'type' -> 'term', 'options' -> ['x', 'y', 'z']},
+		'daxis' -> {'type' -> 'term', 'options' -> ['xy', 'xz', 'yx' ,'yz','zx', 'zy']},
+	}
+};
