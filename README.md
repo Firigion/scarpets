@@ -35,17 +35,17 @@ To set positions, grab a golden sword and left click, right click or shift right
 Shapes are available under the subcommand `/shapes <shape_name> <block> <options>`. Almost all of the shapes accept a `<width>` parameter as first option and it defaults to one block width, if not given. Currently available shapes are:
 
 * `plane <block> [<width>]`: it will draw a plane passing through the three defined points, so long as they are not colinear. If they are, it will probably give a divide by zero error, or something like that. Three colinear points don't define a plane anyway, so why should it work?
-* `shpere <block> [<width>]`: it will draw the smallest shperical shell passing through the three defined points. Why would you want a bigger one? Note that passing width as 1 will give a slightly different behaviour from any other number, because it uses a different function in the backend. Width is counted from the radius towards the inside.
+* `shpere <block> [<width>]`: it will draw the smallest spherical shell passing through the three defined points. Why would you want a bigger one? Note that passing width as 1 will give a slightly different behavior from any other number, because it uses a different function in the backend. Width is counted from the radius towards the inside.
 * `ring <block> [<width>]`: it will draw the ring (thicc circle) passing through the three defined points. This what I made this script for: do you know how hard it is to draw circles in any orientation in three dimensional space freehand? `width` will increase width of the shape in all directions, not only radialy.
 * `disc <block> [<width>]`: like ring, but full. A disc, you know.
 * `line <block> [<width>]`: it's like intersecting two planes. Literally, that's how it's done in the app. Line will only use positions 1 and 2 to draw, ignoring position 3.
 * `line <block> fast`: this is an alternative line algorithm. It's way faster for very big lines, so if you need to draw a 200 block line, use this. It might even work into unloaded chunks, not sure.
-* `line <block> sight <length>`: this generates a line in a cartesian direction startng from `pos1` and extending in the direction the player is looking at for `length` blocks. It ignores `pos2` and `pos3`.
-* `tube <block> <thickness> [rminor]`: this draws a tube (cylindrical shell without the caps) with length defined by `pos1` and `pos2`, and radius defined by the distance from `pos3` to the line that joins `pos1` and `pos2`. The optional `rminor` parameter defines a secondary radius, enabling cylinders with eliptical bases instead of circular ones. Positive values of `tickness` will make a shell that starts at the radius and grows outwards, negative ones will grow inwards.
+* `line <block> sight <length>`: this generates a line in a cartesian direction starting from `pos1` and extending in the direction the player is looking at for `length` blocks. It ignores `pos2` and `pos3`.
+* `tube <block> <thickness> [rminor]`: this draws a tube (cylindrical shell without the caps) with length defined by `pos1` and `pos2`, and radius defined by the distance from `pos3` to the line that joins `pos1` and `pos2`. The optional `rminor` parameter defines a secondary radius, enabling cylinders with elliptical bases instead of circular ones. Positive values of `tickness` will make a shell that starts at the radius and grows outwards, negative ones will grow inwards.
 
 
 ### Extras
-You can mesure the distance between `pos1` and `pos2`, like with carpet's brown carpet, using `/shapes distance`. 
+You can measure the distance between `pos1` and `pos2`, like with carpet's brown carpet, using `/shapes distance`. 
 
 You can also throw a snowball at something and delete a blob of blocks that's directly connected to the first block you reached by some taxicab path, use with care. It doesn't even work with undo, for some reason!
 
@@ -65,7 +65,7 @@ In sphere mode, you just need to run `/cover sphere <radius>`, where `<radius>` 
 
 In region mode, you first make a selection to define the area to affect, and then cover the blocks with `/cover region`. To select the volume use an **iron sword** and right and left click to define the corners of the rectangle encompassing the region. Use `/cover reset_positions` to remove the selection.
 
-Random mode uses the same selection as region mode. It uses the items in a shulker box in the main hand to generate a pool of random blocks to place. To alter the weight of each item, just occupy more slots in the box with that item. If your offhand is empty, it will just fill the whole region. If has an item or shulker box, the items in the box will act as a filter and blocks will only be placed on blocks matching the items. You can run it with `/cover random` or `/cover random_cover`, the latter being version with slightly different behaviour, making it more similar to the cover functions.
+Random mode uses the same selection as region mode. It uses the items in a shulker box in the main hand to generate a pool of random blocks to place. To alter the weight of each item, just occupy more slots in the box with that item. If your offhand is empty, it will just fill the whole region. If has an item or shulker box, the items in the box will act as a filter and blocks will only be placed on blocks matching the items. You can run it with `/cover random` or `/cover random_cover`, the latter being version with slightly different behavior, making it more similar to the cover functions.
 
 To use blocks like air or liquids, there are some aliases: 
 ```
@@ -76,11 +76,11 @@ ender_eye -> end_portal
 flint_and_steel -> nether_portal
 ```
 
-You can toggle between asynchronous behaviour and synchronous behaviour for all functions except continuous mode using `toggle_parallel`. The former is the default and will run all commands in a separate thread, which will result in a slower execution of the command, but it should not lag the game at all. If you are running something on a large area, be patient, it _is_ running, even if the MSPT didn't jump. The latter forces the game to run the commands synchronously, which will force the game to do stuff as fast as it can, but for larger regions, that might mean a very large lag spike and temporarily freezing the game. Use with care. You can only do one job at a time. Continuous mode always runs in synch.
+You can toggle between asynchronous behavior and synchronous behavior for all functions except continuous mode using `toggle_parallel`. The former is the default and will run all commands in a separate thread, which will result in a slower execution of the command, but it should not lag the game at all. If you are running something on a large area, be patient, it _is_ running, even if the MSPT didn't jump. The latter forces the game to run the commands synchronously, which will force the game to do stuff as fast as it can, but for larger regions, that might mean a very large lag spike and temporarily freezing the game. Use with care. You can only do one job at a time. Continuous mode always runs in synch.
 
 All modes support an undo functionality, read [this](https://github.com/Firigion/scarpets/#undo) for more details. Take into account that continuous mode will record each successful tick as a separate action, so you might need to undo a lot of actions. 
 
-The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it showcases most things described above plus a nice trick you can use this for. The shpere and random modes are showcase [here](https://youtu.be/iUyGJdmje8U).
+The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it showcases most things described above plus a nice trick you can use this for. The sphere and random modes are showcase [here](https://youtu.be/iUyGJdmje8U).
 
 # Soft Replace
 Soft replace is a small utility app oriented at creative mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your world save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
@@ -108,7 +108,7 @@ For once, the [video](https://www.youtube.com/watch?v=Q6GULuQjgxQ&t=1s) is fully
 # Spawning spheres
 [NOTE: this is deprecated in favour of the built-in overlay app.]
 
-To use this app, put the .sc file int your scripts folder and run `/script load spawning_spheres`. It adds an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding colour will appear. Inner sphere shows minimum distance to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another colour to create a second double sphere. Right click with a glass block to delete all renders.
+To use this app, put the .sc file int your scripts folder and run `/script load spawning_spheres`. It adds an option to render spawning sphere around a position with one click. Right click with a wool block and a double sphere of the corresponding color will appear. Inner sphere shows minimum distance to the player for mobs to spawn. Outer ones shows where mobs instantly despawn. Right click again to move the sphere, or click with another color to create a second double sphere. Right click with a glass block to delete all renders.
 
 If for some reason you need a video to see this in action, [here](https://youtu.be/5V6gqe8OHm4) it is.
 
@@ -140,7 +140,7 @@ You can erase all positions with `reset_pos` and query them with `get_pos` and, 
 
 ### Undo
 
-All actions done with this app are saved into history. You can at any time undo any or all of them. To do so, you have two commands available: `undo <n>` and `go_back_stories <n>`, both of which take a number as a parameter. The first one will undo as many actions as requested, so `curves undo 4` will undo your last four actions. The second one is a bit stranger: `curves go_back_stories <n>` will skip your last 3 actions and undo only the thing you did 4 actions ago. Bear in mind, this might have some odd behaviours, because all the `undo` functions do is paste back whatever the action replaced. So if you make a spiral, then replace some of it with another spiral and then undo only the first one, it will put back in place whatever *it* replaced, cutting through the new spiral.
+All actions done with this app are saved into history. You can at any time undo any or all of them. To do so, you have two commands available: `undo <n>` and `go_back_stories <n>`, both of which take a number as a parameter. The first one will undo as many actions as requested, so `curves undo 4` will undo your last four actions. The second one is a bit stranger: `curves go_back_stories <n>` will skip your last 3 actions and undo only the thing you did 4 actions ago. Bear in mind, this might have some odd behaviors, because all the `undo` functions do is paste back whatever the action replaced. So if you make a spiral, then replace some of it with another spiral and then undo only the first one, it will put back in place whatever *it* replaced, cutting through the new spiral.
 
 There is one setting pertinent to the `undo` functions, that set how many actions to save into history. It defaults to 100, but you can set it to whatever you like with `set_undo_history_size <size>`. You can see this features being used in [this bad showcase video](https://www.youtube.com/watch?v=qeGa9eZy8PA) using spirals.
 
@@ -246,15 +246,15 @@ Here's a [video](https://youtu.be/HCePbkaB8Vk) showing this functionality.
 
 # Storage tech aid
 
-This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designig. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
+This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designing. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
 
 ### Magic hoppers and chests
 
-Upon loading up the app (`/script load storagetech_aid`), you will recieve three chests and two hoppers. If you hover over them they will tell you what each does, but for clarity, here's a brakedown:
-* `Double chests full of boxes` will place a row of double chests in the direction you are looking full of shulker boxes full of items. Each chest will contain a uinque item type.
-* `Double chests full of items` will place a row of double chests in the direction you are looking full of stacks of items. Each chest will contain a uinque item type.
+Upon loading up the app (`/script load storagetech_aid`), you will receive three chests and two hoppers. If you hover over them they will tell you what each does, but for clarity, here's a brakedown:
+* `Double chests full of boxes` will place a row of double chests in the direction you are looking full of shulker boxes full of items. Each chest will contain a unique item type.
+* `Double chests full of items` will place a row of double chests in the direction you are looking full of stacks of items. Each chest will contain a unique item type.
 * `Hopper full of single item type` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will be full of one item type each, useful for doublespeed sorters.
-* `Signal strength defined sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have the settings required for an item filter: the item to filter in the first slot and the the rest of the slots with dummy (blocker) items. You can set the ammount of items for the first slot using `/storagetech_aid set_fst_slot_fill_level <number>` and set the signal srength of the filter with `/storagetech_aid set_hopper_ss <number>`. That means, the hopper will have enough items such that, when it recieves a new item, the signal strength will raise to the requested value. Default values are 41 items and ss3, what's needed for a standard overflow proof item sorter. If the signal strength value and first slot stack size you specify are not compatible, all dummy items stacks will be set to one and the first slot value will be the default.
+* `Signal strength defined sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have the settings required for an item filter: the item to filter in the first slot and the the rest of the slots with dummy (blocker) items. You can set the amount of items for the first slot using `/storagetech_aid set_fst_slot_fill_level <number>` and set the signal strength of the filter with `/storagetech_aid set_hopper_ss <number>`. That means, the hopper will have enough items such that, when it receives a new item, the signal strength will raise to the requested value. Default values are 41 items and ss3, what's needed for a standard overflow proof item sorter. If the signal strength value and first slot stack size you specify are not compatible, all dummy items stacks will be set to one and the first slot value will be the default.
 * `Double chests configured for hex encoders` will place a row of double chests in the direction you are looking. Each chest will me set up for a traditional item encoder system, where if you take out one item from it, the signal strength value reading from it will decrease by one. The ss value can be set with `/storagetech_aid set_chest_ss <number>`. The items are generated from files, see [below](https://github.com/Firigion/scarpets#encoded_chest_files).
 
 ### Items lists and files
@@ -292,7 +292,7 @@ Files to define the encoded chests need to be inside a folder named `encoders`, 
 
 ### Signal strength
 
-The app also has a functionality to return the signal strength of a cointainer. This is especially useful for overloaded containers (containers with stacked unstackables, which usually results in a comparator reading signal strength higher than 15), since a redstone dust powered by a comparator reading from this inventory will be at ss15.
+The app also has a functionality to return the signal strength of a container. This is especially useful for overloaded containers (containers with stacked unstackables, which usually results in a comparator reading signal strength higher than 15), since a redstone dust powered by a comparator reading from this inventory will be at ss15.
 
 To use it, just look at the inventory in question and run `/storagetech_aid ss` or `/storagetech_aid ss <pos>` to specify a position other than the one you are looking at.
 
@@ -305,7 +305,7 @@ To use it, look at the inventory in question and run `/storagetech_aid fill_ss <
 There are some other odds and ends in this app:
 
 #### Safe mode
-The app by default will replace any block in its way when placing hoppers and chests. Thurning on safe mode (with `/storagetech_aid set_safe_mode true`) will make it so that only air blocks are replaced.
+The app by default will replace any block in its way when placing hoppers and chests. Turning on safe mode (with `/storagetech_aid set_safe_mode true`) will make it so that only air blocks are replaced.
 
 #### Chest of stacked shulkers
 Just that: get a chest full of stacked shulker boxes, so you don't have to stack them yourself. Run `/storagetech_aid stacked_shulkers_chest` to set the chest at your feet.
@@ -315,4 +315,4 @@ At some point someone needed a bunch of items named with names going from 1 to s
 
 #### Video!
 
-Like always, I made a (not so shor this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them.
+Like always, I made a (not so sure this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them.
