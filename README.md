@@ -14,6 +14,7 @@ Files with .sc format are meant to be used with `/script load <script_name> [glo
 * [Stack potion effects](https://github.com/Firigion/scarpets/blob/master/README.md#stack-potion-effects)
 * [Curves](https://github.com/Firigion/scarpets/blob/master/README.md#curves)
 * [Storage tech aid](https://github.com/Firigion/scarpets/blob/master/README.md#storage-tech-aid)
+* [Tile or grid](https://github.com/Firigion/scarpets/blob/master/README.md#tile-or-grid)
 
 # Flowerify
 [NOTE: this is deprecated in favour of a better app, available at the [official scarpet app store](https://github.com/gnembon/scarpet).]
@@ -316,3 +317,36 @@ At some point someone needed a bunch of items named with names going from 1 to s
 #### Video!
 
 Like always, I made a (not so shor this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them.
+
+# Tile or grid
+
+**Disclaimer:** this app is currently in beta. It's pushed to this repo so that it's easier to install on servers using the `/script download` functionality.
+
+### How to use
+- User can define a grid by how many repetirions it makes in each direction and how far apart the repetitions are like so:
+`/tile <axis> <repetitions> every <blocks>` for example `/grid x 2 every 7`
+which will clone everithing you palce along the x direction two times in the positive direction and two times in the negative direction, each copy being placed seven blocks apart, resulting in five copies of your palced block. You can define a grid that's asimetric in the positive and negative directions like so:
+`/tile <axis> <positive_repetitions> <negative_repetitions> every <blocks>`
+- A grid can follow the player around or be fixed to the world, you can toggle between these modes with
+`/tile fix <x y z>` and `/tile follow`
+Note that a grid will always follow the player in the directions that it's not cloning blocks. For example, if the user defined a flat grid to clone in x and z, it will always follow the player in y.
+- There are two shortcuts to define grids:
+`/tile flat <repetitions> [<negative_repetitions>] every <blocks>`
+will generate a symmetric flat grid.
+`/tile <x y z> <x y z> <repetitions>` or `/tile <x y z> <x y z> <x_reps> <y_reps> <z_reps>`
+will generate a gird defined by the two corners and fixed to the world in that position, repeating as many times as indicated in each direction.
+- If the current region you are in is not identical to the ones you are cloning into (because somthing else changed the world or because it was like that before you activated the grid), you can use `/tile udpate` to clone everything over. In the directions where a step is not defined (like vertical in a flat grid), you will get a default +-5 blocks of affected distance.
+- You can reset everything (including fix location) with `/tile reset` or just one dimension at a time with `/tile reset [axis]`.
+- Hide the lines, make them more visually onvious or reset them to default with with `/tile settings line <hide|dense|sparse>`.
+
+### Known issues/planned changes
+- 2-tall or 2-wide blocks are still not handled.
+- Auto-updating of the inventory is not implemented.
+- Activating things like levers and notblocks works, but things that turn themselves off like buttons and pressure plates will get stuck on. Use /grid update to remedy this, for now.
+- When the grid is fixed to the world, and hence you can move outside of it, there's now ay of telling which region is the one that has cloning enabled short of finding the middle and hoping you set up a symmetric grid. The idea is to mark the cloning region in a different color (would the be good enough)?
+- Grids are only shown to the player that activated them. That's because thye are only active for that player. making things global is not a good choice. Right now the intended solution is that, if you are building in a region together with someone else, jsut tell them what grid you set up and they'll set up it themselves. i can add a feature to share grids later at some point, if it's needed.
+- When grids are fixed to the world, only one of the regions in the grid is the cloning one. Placing blocks outside of that region but still inside the grid will not clone them. I may add an option to make the whole grid clone into the whole grid (which would involve finding out what region the block is in to see how to clone in). I'm thinking of calling the current mode "strict" and the new one... "lax"?idk
+
+### Video
+https://youtu.be/c_D92V8-Kog 
+
