@@ -320,7 +320,7 @@ Like always, I made a (not so shor this time) [video showcase](https://youtu.be/
 
 # Tile or grid
 
-**Disclaimer:** this app is currently in beta. It's pushed to this repo so that it's easier to install on servers using the `/script download` functionality.
+**Disclaimer:** this app is currently in beta. It's pushed to this repo so that it's easier to install on servers using the `/script download` functionality. You can also install it by hand by butting [tile.sc](https://github.com/Firigion/scarpets/blob/master/tike.sc) into your scripts folder of your world.
 
 ### How to use
 - User can define a grid by how many repetirions it makes in each direction and how far apart the repetitions are like so:
