@@ -27,7 +27,7 @@ Load with `/script load skip-night`. A tiny app to skip the night without the ne
 Both modes will check daytime every 100 game ticks by default, can be configured inside the app. When skipping the night, time is _added_ to the current game time, so day and local difficulty will not be affected, as shown in [the showcase video](https://youtu.be/FY0PwGE0g68).
 
 # Shapes
-Shapes is an app to draw shapes in-game, but, unlike the usual shape-drawing tools you see in Minecraft, this is centered around setting three points in space and drawing the shape defined but them. To use it, put [shapes.sc](https://github.com/Firigion/scarpets/blob/master/shapes.sc) in your `/scripts` folder in your world save and run `/script load shapes`. All commands will be available as subcommands of `/shapes`.
+Shapes is an app to draw shapes in-game, but, unlike the usual shape-drawing tools you see in Minecraft, this is centered around setting three points in space and drawing the shape defined but them. To use it, put [shapes.sc](https://github.com/Firigion/scarpets/blob/master/programs/shapes.sc) in your `/scripts` folder in your world save and run `/script load shapes`. All commands will be available as subcommands of `/shapes`.
 
 ### Positions
 To set positions, grab a golden sword and left click, right click or shift right click on a block with it, to set positions 1, 2 and 3, respectively. You can also do it by running `/shapes makers set <number>`. A marker will appear in the block the player is looking at. If no block is within reach, the marker will appear at the players feet (you can't left click air, sadly, carpet things). These markers are the positions the shapes will use as reference. You can also `/shapes markers get` to get the coordinates of all set positions and toggle the rendering of the markers with `markers toggle`. Note that while markers are not rendered, positions are still recorded. If you log out or something and markers are not deleted (it happens sometimes), run `/script run remove_all_markers()`.
@@ -54,7 +54,7 @@ You can watch a video with some of the features [here](https://www.youtube.com/w
 
 # Cover
 
-Cover is a small utility app oriented at creative mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) in your `/scripts` folder in your world save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings. It can also generate random patterns from a block pool.
+Cover is a small utility app oriented at creative mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/programs/cover.sc) in your `/scripts` folder in your world save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings. It can also generate random patterns from a block pool.
 
 To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block pairs at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventory. Blocks will only get placed replacing air.
 
@@ -84,7 +84,7 @@ All modes support an undo functionality, read [this](https://github.com/Firigion
 The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it showcases most things described above plus a nice trick you can use this for. The shpere and random modes are showcase [here](https://youtu.be/iUyGJdmje8U).
 
 # Soft Replace
-Soft replace is a small utility app oriented at creative mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your world save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
+Soft replace is a small utility app oriented at creative mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/programs/soft_replace.sc) into your `/scripts` folder in your world save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
 
 To do so, just hold the block you want to replace (diorite stairs, in this case) in your offhand and the block you want to replace _with_ (birch stairs) in your main hand. Then, to select the area you want to affect, grab a **stone sword** and right and left click to select the corners of a rectangle defining the volume. Finally, run `/soft_replace region` to execute the operation.
 
@@ -115,11 +115,11 @@ If for some reason you need a video to see this in action, [here](https://youtu.
 
 # Stack potion effects
 
-Pretty much what it ways on the tin: when you drink a potion, instead of overriding the duration you had left for that same effect, it adds the potion length to the old one. To use it, put [stack_potion_effects.sc](https://github.com/Firigion/scarpets/blob/master/stack_potion_effects.sc) into your `/scripts` folder inside your world save. You might want to have this app automatically load when you launch your world or server. To do that, follow [these](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world#keeping-scripts-loaded) instructions.
+Pretty much what it ways on the tin: when you drink a potion, instead of overriding the duration you had left for that same effect, it adds the potion length to the old one. To use it, put [stack_potion_effects.sc](https://github.com/Firigion/scarpets/blob/master/programs/stack_potion_effects.sc) into your `/scripts` folder inside your world save. You might want to have this app automatically load when you launch your world or server. To do that, follow [these](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world#keeping-scripts-loaded) instructions.
 
 
 # Curves
-The curves app is a creative mode-oriented script that includes a few commands to generate 3D curves of different types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/curves.sc) into your `/scripts` folder in your world save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
+The curves app is a creative mode-oriented script that includes a few commands to generate 3D curves of different types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/programs/curves.sc) into your `/scripts` folder in your world save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
 
 The app includes four [shapes or curve types][1], has a [settings UI][2], a [help command][3], a way to make [selections][4] in-world and [undo][5] your actions. It also includes the [soft replace app][7]. 
 
@@ -247,7 +247,7 @@ Here's a [video](https://youtu.be/HCePbkaB8Vk) showing this functionality.
 
 # Storage tech aid
 
-This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designig. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
+This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/programs/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designig. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
 
 ### Magic hoppers and chests
 
@@ -320,7 +320,7 @@ Like always, I made a (not so shor this time) [video showcase](https://youtu.be/
 
 # Tile or grid
 
-**Disclaimer:** this app is currently in beta. It's pushed to this repo so that it's easier to install on servers using the `/script download` functionality. You can also install it by hand by butting [tile.sc](https://github.com/Firigion/scarpets/blob/master/tike.sc) into your scripts folder of your world.
+**Disclaimer:** this app is currently in beta. It's pushed to this repo so that it's easier to install on servers using the `/script download` functionality. You can also install it by hand by putting [tile.sc](https://github.com/Firigion/scarpets/blob/master/programs/tile.sc) into your scripts folder of your world.
 
 ### How to use
 - User can define a grid by how many repetirions it makes in each direction and how far apart the repetitions are like so:
