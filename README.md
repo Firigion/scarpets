@@ -255,6 +255,7 @@ Upon loading up the app (`/script load storagetech_aid`), you will recieve three
 * `Double chests full of boxes` will place a row of double chests in the direction you are looking full of shulker boxes full of items. Each chest will contain a uinque item type.
 * `Double chests full of items` will place a row of double chests in the direction you are looking full of stacks of items. Each chest will contain a uinque item type.
 * `Hopper full of single item type` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will be full of one item type each, useful for doublespeed sorters.
+* `Hopper for a shulker box sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have each one item type in the first slot and the rest of the slots will be shulker boxes. The ammount of items in the first slot is defined by the global `fst_slot_fill_level`, see the next point for more info.
 * `Signal strength defined sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have the settings required for an item filter: the item to filter in the first slot and the the rest of the slots with dummy (blocker) items. You can set the ammount of items for the first slot using `/storagetech_aid set_fst_slot_fill_level <number>` and set the signal srength of the filter with `/storagetech_aid set_hopper_ss <number>`. That means, the hopper will have enough items such that, when it recieves a new item, the signal strength will raise to the requested value. Default values are 41 items and ss3, what's needed for a standard overflow proof item sorter. If the signal strength value and first slot stack size you specify are not compatible, all dummy items stacks will be set to one and the first slot value will be the default.
 * `Double chests configured for hex encoders` will place a row of double chests in the direction you are looking. Each chest will me set up for a traditional item encoder system, where if you take out one item from it, the signal strength value reading from it will decrease by one. The ss value can be set with `/storagetech_aid set_chest_ss <number>`. The items are generated from files, see [below](https://github.com/Firigion/scarpets#encoded_chest_files).
 
@@ -267,6 +268,7 @@ If you don't feel like modifying the code, or think that you need to constantly 
 * `chest_shulkers_from_file` to get the chest full of shulkers full of items
 * `hopper_full_from_file` to get the hopper full of items
 * `hopper_from_file` to get the hopper filter maker
+* `hopper_box_sorter_from_file` to get hopper for box sorter
 
 The files in question have to be located in a folder named `item_lists` which in turn has to be inside a folder named `storagetech_aid.data`. This folder needs to be in the same directory the app `storagetech_aid.sc` is. The files can be in either `JSON` or plain `text` format. For `JSON` files the format is as follows:
 ```json
@@ -311,12 +313,12 @@ The app by default will replace any block in its way when placing hoppers and ch
 #### Chest of stacked shulkers
 Just that: get a chest full of stacked shulker boxes, so you don't have to stack them yourself. Run `/storagetech_aid stacked_shulkers_chest` to set the chest at your feet.
 
-#### Some funcy barrels
+#### Some funky barrels
 At some point someone needed a bunch of items named with names going from 1 to some given number, so I added a thing to create a row of barrels in the direction you are looking at willed with stacks of buttons named `1`, `2` and so on until the number specified by `/storagetech_aid bin_barrel <number>`.
 
 #### Video!
 
-Like always, I made a (not so shor this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them.
+Like always, I made a (not so short this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them. Alos, as I've been adding features to this app, I haven't been recoding new videos, so some features are not... featured in the video.
 
 # Tile or grid
 
