@@ -51,6 +51,7 @@ __config() -> {
         'bin_barrel <int>'->'set_bin_barrels',
         'hopper_from_file <file>'->['container_form_file', 'hopper_ss', 'hopper'],
         'hopper_full_from_file <file>'->['container_form_file', 'hopper_double', 'hopper'],
+        'hopper_box_sorter_from_file <file>'->['container_form_file', 'hopper_box_sorter', 'hopper'],
         'chest_from_file <file>'->['container_form_file', 'chest_singles', 'chest'],
         'chest_shulkers_from_file <file>'->['container_form_file', 'chest_shulkers', 'chest'],
         'ss' -> _() -> print(p = player(), inventory_ss(p~'trace')),
@@ -228,6 +229,11 @@ fill_hopper_ss(item, position) -> ( // for sorters with set ss
     set_hopper_inv(position, 1, max(1, get_count_for_stack_size(sl)))
 );
 
+fill_hopper_box_sorter(item, position) -> ( // for sorters with set ss
+    inventory_set(position, 0, min(sl=stack_limit(item), global_1st_slot_fill), item);
+    loop(4, inventory_set(position, _+1, 1, 'white_shulker_box') );
+);
+
 set_and_fill_hopper(item, position, orientation, type) -> (
     success = set_hopper(position, orientation);
     if(success,
@@ -236,6 +242,8 @@ set_and_fill_hopper(item, position, orientation, type) -> (
             fill_hopper_double(item, position),
             type == 'hopper_ss',
             fill_hopper_ss(item, position),
+            type == 'hopper_box_sorter',
+            fill_hopper_box_sorter(item, position),
         )
     )
 );
@@ -296,9 +304,10 @@ global_lores = {
     'chest_encoder' -> ['\'{"text":"Double chests configured for hex encoders","color":"red"}\''],
     'hopper_double' -> ['\'{"text":"Hopper full of single item type","color":"green"}\''],
     'hopper_ss' -> ['\'{"text":"Signal strength defined sorter","color":"light_purple"}\''],
+    'hopper_box_sorter' -> ['\'{"text":"Hopper with unstackables as filler items","color":"dark_aqua"}\''],
 };
 
-for( ['chest_shulkers', 'chest_singles', 'chest_encoder', 'hopper_double', 'hopper_ss'],
+for( ['chest_shulkers', 'chest_singles', 'chest_encoder', 'hopper_double', 'hopper_ss', 'hopper_box_sorter'],
     give_item(split('_',_):0, _, global_lores:_, null)
 );
 

@@ -14,6 +14,7 @@ Files with .sc format are meant to be used with `/script load <script_name> [glo
 * [Stack potion effects](https://github.com/Firigion/scarpets/blob/master/README.md#stack-potion-effects)
 * [Curves](https://github.com/Firigion/scarpets/blob/master/README.md#curves)
 * [Storage tech aid](https://github.com/Firigion/scarpets/blob/master/README.md#storage-tech-aid)
+* [Tile or grid](https://github.com/Firigion/scarpets/blob/master/README.md#tile-or-grid)
 
 # Flowerify
 [NOTE: this is deprecated in favour of a better app, available at the [official scarpet app store](https://github.com/gnembon/scarpet).]
@@ -26,7 +27,7 @@ Load with `/script load skip-night`. A tiny app to skip the night without the ne
 Both modes will check daytime every 100 game ticks by default, can be configured inside the app. When skipping the night, time is _added_ to the current game time, so day and local difficulty will not be affected, as shown in [the showcase video](https://youtu.be/FY0PwGE0g68).
 
 # Shapes
-Shapes is an app to draw shapes in-game, but, unlike the usual shape-drawing tools you see in Minecraft, this is centered around setting three points in space and drawing the shape defined but them. To use it, put [shapes.sc](https://github.com/Firigion/scarpets/blob/master/shapes.sc) in your `/scripts` folder in your world save and run `/script load shapes`. All commands will be available as subcommands of `/shapes`.
+Shapes is an app to draw shapes in-game, but, unlike the usual shape-drawing tools you see in Minecraft, this is centered around setting three points in space and drawing the shape defined but them. To use it, put [shapes.sc](https://github.com/Firigion/scarpets/blob/master/programs/shapes.sc) in your `/scripts` folder in your world save and run `/script load shapes`. All commands will be available as subcommands of `/shapes`.
 
 ### Positions
 To set positions, grab a golden sword and left click, right click or shift right click on a block with it, to set positions 1, 2 and 3, respectively. You can also do it by running `/shapes makers set <number>`. A marker will appear in the block the player is looking at. If no block is within reach, the marker will appear at the players feet (you can't left click air, sadly, carpet things). These markers are the positions the shapes will use as reference. You can also `/shapes markers get` to get the coordinates of all set positions and toggle the rendering of the markers with `markers toggle`. Note that while markers are not rendered, positions are still recorded. If you log out or something and markers are not deleted (it happens sometimes), run `/script run remove_all_markers()`.
@@ -53,7 +54,7 @@ You can watch a video with some of the features [here](https://www.youtube.com/w
 
 # Cover
 
-Cover is a small utility app oriented at creative mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/cover.sc) in your `/scripts` folder in your world save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings. It can also generate random patterns from a block pool.
+Cover is a small utility app oriented at creative mode decoration. To use it, put [cover.sc](https://github.com/Firigion/scarpets/blob/master/programs/cover.sc) in your `/scripts` folder in your world save and run `/script load cover`. Its main function is to cover a block type with some other block, the idea being this helps spawnproof decorations and buildings. It can also generate random patterns from a block pool.
 
 To select what block to cover with what, place the block to cover in your offhand and the block to cover it _with_ in your main hand when running the command. If you want to do many block pairs at once, place shulker box with the blocks to cover in the offhand and another one with the corresponding blocks in the main hand. Block pairs (covered-coveree) will be made by matching slots in the shulker box's inventory. Blocks will only get placed replacing air.
 
@@ -83,7 +84,7 @@ All modes support an undo functionality, read [this](https://github.com/Firigion
 The [video](https://youtu.be/i3YxwoTCOVM) for this one is a bit long, but it showcases most things described above plus a nice trick you can use this for. The sphere and random modes are showcase [here](https://youtu.be/iUyGJdmje8U).
 
 # Soft Replace
-Soft replace is a small utility app oriented at creative mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/soft_replace.sc) into your `/scripts` folder in your world save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
+Soft replace is a small utility app oriented at creative mode decoration (just like the last one!). To use it, put [soft_replace.sc](https://github.com/Firigion/scarpets/blob/master/programs/soft_replace.sc) into your `/scripts` folder in your world save and run `/script load soft_replace`. This app will help you replace blocks just like the vanilla replace command, but keeping their block properties. This means that if you made a complex structure out of stair blocks and decide that you want to try using birch instead of diorite, running soft replace will replace all diorite stairs by birch stairs, preserving their orientation.
 
 To do so, just hold the block you want to replace (diorite stairs, in this case) in your offhand and the block you want to replace _with_ (birch stairs) in your main hand. Then, to select the area you want to affect, grab a **stone sword** and right and left click to select the corners of a rectangle defining the volume. Finally, run `/soft_replace region` to execute the operation.
 
@@ -114,11 +115,11 @@ If for some reason you need a video to see this in action, [here](https://youtu.
 
 # Stack potion effects
 
-Pretty much what it ways on the tin: when you drink a potion, instead of overriding the duration you had left for that same effect, it adds the potion length to the old one. To use it, put [stack_potion_effects.sc](https://github.com/Firigion/scarpets/blob/master/stack_potion_effects.sc) into your `/scripts` folder inside your world save. You might want to have this app automatically load when you launch your world or server. To do that, follow [these](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world#keeping-scripts-loaded) instructions.
+Pretty much what it ways on the tin: when you drink a potion, instead of overriding the duration you had left for that same effect, it adds the potion length to the old one. To use it, put [stack_potion_effects.sc](https://github.com/Firigion/scarpets/blob/master/programs/stack_potion_effects.sc) into your `/scripts` folder inside your world save. You might want to have this app automatically load when you launch your world or server. To do that, follow [these](https://github.com/gnembon/fabric-carpet/wiki/Installing-carpet-scripts-in-your-world#keeping-scripts-loaded) instructions.
 
 
 # Curves
-The curves app is a creative mode-oriented script that includes a few commands to generate 3D curves of different types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/curves.sc) into your `/scripts` folder in your world save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
+The curves app is a creative mode-oriented script that includes a few commands to generate 3D curves of different types. To use it, put [curves.sc](https://github.com/Firigion/scarpets/blob/master/programs/curves.sc) into your `/scripts` folder in your world save and run `/script load curves`. All commands in this app should be available with `/curves <command>`. A playlist with all the videos relevant to this app can be found [here](https://www.youtube.com/playlist?list=PL8lLKEt66RqslmFunrXESEZeu9HS6LJnd).
 
 The app includes four [shapes or curve types][1], has a [settings UI][2], a [help command][3], a way to make [selections][4] in-world and [undo][5] your actions. It also includes the [soft replace app][7]. 
 
@@ -246,7 +247,7 @@ Here's a [video](https://youtu.be/HCePbkaB8Vk) showing this functionality.
 
 # Storage tech aid
 
-This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designing. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
+This app (get it [here](https://raw.githubusercontent.com/Firigion/scarpets/master/programs/storagetech_aid.sc)) is a bundle of crude features designed to help you in different aspects of storage tech designing. It has a few features ranging from reading signal strength level from an inventory and setting it's contents to some level, to generating a row of chests or hoppers so that you don't have to pre fill them by hand yourself.
 
 ### Magic hoppers and chests
 
@@ -254,6 +255,7 @@ Upon loading up the app (`/script load storagetech_aid`), you will receive three
 * `Double chests full of boxes` will place a row of double chests in the direction you are looking full of shulker boxes full of items. Each chest will contain a unique item type.
 * `Double chests full of items` will place a row of double chests in the direction you are looking full of stacks of items. Each chest will contain a unique item type.
 * `Hopper full of single item type` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will be full of one item type each, useful for doublespeed sorters.
+* `Hopper for a shulker box sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have each one item type in the first slot and the rest of the slots will be shulker boxes. The ammount of items in the first slot is defined by the global `fst_slot_fill_level`, see the next point for more info.
 * `Signal strength defined sorter` will place a row of hoppers in the direction you are looking and conserving the orientation of the hopper you place. The hoppers will have the settings required for an item filter: the item to filter in the first slot and the the rest of the slots with dummy (blocker) items. You can set the amount of items for the first slot using `/storagetech_aid set_fst_slot_fill_level <number>` and set the signal strength of the filter with `/storagetech_aid set_hopper_ss <number>`. That means, the hopper will have enough items such that, when it receives a new item, the signal strength will raise to the requested value. Default values are 41 items and ss3, what's needed for a standard overflow proof item sorter. If the signal strength value and first slot stack size you specify are not compatible, all dummy items stacks will be set to one and the first slot value will be the default.
 * `Double chests configured for hex encoders` will place a row of double chests in the direction you are looking. Each chest will me set up for a traditional item encoder system, where if you take out one item from it, the signal strength value reading from it will decrease by one. The ss value can be set with `/storagetech_aid set_chest_ss <number>`. The items are generated from files, see [below](https://github.com/Firigion/scarpets#encoded_chest_files).
 
@@ -266,6 +268,7 @@ If you don't feel like modifying the code, or think that you need to constantly 
 * `chest_shulkers_from_file` to get the chest full of shulkers full of items
 * `hopper_full_from_file` to get the hopper full of items
 * `hopper_from_file` to get the hopper filter maker
+* `hopper_box_sorter_from_file` to get hopper for box sorter
 
 The files in question have to be located in a folder named `item_lists` which in turn has to be inside a folder named `storagetech_aid.data`. This folder needs to be in the same directory the app `storagetech_aid.sc` is. The files can be in either `JSON` or plain `text` format. For `JSON` files the format is as follows:
 ```json
@@ -310,9 +313,42 @@ The app by default will replace any block in its way when placing hoppers and ch
 #### Chest of stacked shulkers
 Just that: get a chest full of stacked shulker boxes, so you don't have to stack them yourself. Run `/storagetech_aid stacked_shulkers_chest` to set the chest at your feet.
 
-#### Some funcy barrels
+#### Some funky barrels
 At some point someone needed a bunch of items named with names going from 1 to some given number, so I added a thing to create a row of barrels in the direction you are looking at willed with stacks of buttons named `1`, `2` and so on until the number specified by `/storagetech_aid bin_barrel <number>`.
 
 #### Video!
 
-Like always, I made a (not so sure this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them.
+Like always, I made a (not so sure this time) [video showcase](https://youtu.be/2PZjUQCN4_k). I think this one is especially bad when compared to the rest of them. Also, as I've been adding features to this app, I haven't been recoding new videos, so some features are not... featured in the video.
+
+# Tile or grid
+
+**Disclaimer:** this app is currently in beta. It's pushed to this repo so that it's easier to install on servers using the `/script download` functionality. You can also install it by hand by putting [tile.sc](https://github.com/Firigion/scarpets/blob/master/programs/tile.sc) into your scripts folder of your world.
+
+### How to use
+- User can define a grid by how many repetirions it makes in each direction and how far apart the repetitions are like so:
+`/tile <axis> <repetitions> every <blocks>` for example `/grid x 2 every 7`
+which will clone everithing you palce along the x direction two times in the positive direction and two times in the negative direction, each copy being placed seven blocks apart, resulting in five copies of your palced block. You can define a grid that's asimetric in the positive and negative directions like so:
+`/tile <axis> <positive_repetitions> <negative_repetitions> every <blocks>`
+- A grid can follow the player around or be fixed to the world, you can toggle between these modes with
+`/tile fix <x y z>` and `/tile follow`
+Note that a grid will always follow the player in the directions that it's not cloning blocks. For example, if the user defined a flat grid to clone in x and z, it will always follow the player in y.
+- There are two shortcuts to define grids:
+`/tile flat <repetitions> [<negative_repetitions>] every <blocks>`
+will generate a symmetric flat grid.
+`/tile <x y z> <x y z> <repetitions>` or `/tile <x y z> <x y z> <x_reps> <y_reps> <z_reps>`
+will generate a gird defined by the two corners and fixed to the world in that position, repeating as many times as indicated in each direction.
+- If the current region you are in is not identical to the ones you are cloning into (because somthing else changed the world or because it was like that before you activated the grid), you can use `/tile udpate` to clone everything over. In the directions where a step is not defined (like vertical in a flat grid), you will get a default +-5 blocks of affected distance.
+- You can reset everything (including fix location) with `/tile reset` or just one dimension at a time with `/tile reset [axis]`.
+- Hide the lines, make them more visually onvious or reset them to default with with `/tile settings line <hide|dense|sparse>`.
+
+### Known issues/planned changes
+- 2-tall or 2-wide blocks are still not handled.
+- Auto-updating of the inventory is not implemented.
+- Activating things like levers and notblocks works, but things that turn themselves off like buttons and pressure plates will get stuck on. Use /grid update to remedy this, for now.
+- When the grid is fixed to the world, and hence you can move outside of it, there's now ay of telling which region is the one that has cloning enabled short of finding the middle and hoping you set up a symmetric grid. The idea is to mark the cloning region in a different color (would the be good enough)?
+- Grids are only shown to the player that activated them. That's because thye are only active for that player. making things global is not a good choice. Right now the intended solution is that, if you are building in a region together with someone else, jsut tell them what grid you set up and they'll set up it themselves. i can add a feature to share grids later at some point, if it's needed.
+- When grids are fixed to the world, only one of the regions in the grid is the cloning one. Placing blocks outside of that region but still inside the grid will not clone them. I may add an option to make the whole grid clone into the whole grid (which would involve finding out what region the block is in to see how to clone in). I'm thinking of calling the current mode "strict" and the new one... "lax"?idk
+
+### Video
+https://youtu.be/c_D92V8-Kog 
+
