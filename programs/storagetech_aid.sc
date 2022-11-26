@@ -52,6 +52,7 @@ __config() -> {
         'hopper_from_file <file>'->['container_form_file', 'hopper_ss', 'hopper'],
         'hopper_full_from_file <file>'->['container_form_file', 'hopper_double', 'hopper'],
         'hopper_box_sorter_from_file <file>'->['container_form_file', 'hopper_box_sorter', 'hopper'],
+        'hopper_overstacked_from_file <file>'->['container_form_file', 'hopper_overstacked', 'hopper'],
         'chest_from_file <file>'->['container_form_file', 'chest_singles', 'chest'],
         'chest_shulkers_from_file <file>'->['container_form_file', 'chest_shulkers', 'chest'],
         'ss' -> _() -> print(p = player(), inventory_ss(p~'trace')),
@@ -229,9 +230,16 @@ fill_hopper_ss(item, position) -> ( // for sorters with set ss
     set_hopper_inv(position, 1, max(1, get_count_for_stack_size(sl)))
 );
 
-fill_hopper_box_sorter(item, position) -> ( // for sorters with set ss
+fill_hopper_box_sorter(item, position) -> ( // for box sorters that use backed up boxes
     inventory_set(position, 0, min(sl=stack_limit(item), global_1st_slot_fill), item);
     loop(4, inventory_set(position, _+1, 1, 'white_shulker_box') );
+);
+
+fill_hopper_overstacked(item, position) -> ( // for overstacked sorters
+    inventory_set(position, 0, 1, item);
+    inventory_set(position, 1, 2, 'white_shulker_box');
+    loop(2, inventory_set(position, _+2, 1, 'white_shulker_box') );
+    set_hopper_inv(position, 4, 63); // dummy items
 );
 
 set_and_fill_hopper(item, position, orientation, type) -> (
@@ -239,11 +247,13 @@ set_and_fill_hopper(item, position, orientation, type) -> (
     if(success,
         if(
             type == 'hopper_double',
-            fill_hopper_double(item, position),
+                fill_hopper_double(item, position),
             type == 'hopper_ss',
-            fill_hopper_ss(item, position),
+                fill_hopper_ss(item, position),
             type == 'hopper_box_sorter',
-            fill_hopper_box_sorter(item, position),
+                fill_hopper_box_sorter(item, position),
+            type == 'hopper_overstacked',
+                fill_hopper_overstacked(item, position),
         )
     )
 );
@@ -305,9 +315,10 @@ global_lores = {
     'hopper_double' -> ['\'{"text":"Hopper full of single item type","color":"green"}\''],
     'hopper_ss' -> ['\'{"text":"Signal strength defined sorter","color":"light_purple"}\''],
     'hopper_box_sorter' -> ['\'{"text":"Hopper with unstackables as filler items","color":"dark_aqua"}\''],
+    'hopper_overstacked' -> ['\'{"text":"Hopper set for overstacked filters","color":"yellow"}\''],
 };
 
-for( ['chest_shulkers', 'chest_singles', 'chest_encoder', 'hopper_double', 'hopper_ss', 'hopper_box_sorter'],
+for( ['chest_shulkers', 'chest_singles', 'chest_encoder', 'hopper_double', 'hopper_ss', 'hopper_box_sorter', 'hopper_overstacked'],
     give_item(split('_',_):0, _, global_lores:_, null)
 );
 
