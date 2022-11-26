@@ -268,7 +268,8 @@ If you don't feel like modifying the code, or think that you need to constantly 
 * `chest_shulkers_from_file` to get the chest full of shulkers full of items
 * `hopper_full_from_file` to get the hopper full of items
 * `hopper_from_file` to get the hopper filter maker
-* `hopper_box_sorter_from_file` to get hopper for box sorter
+* `hopper_box_sorter_from_file` to get hopper for box sorters that use boxes as filler item
+* `hopper_overstacked` to get hopper used for overstacked filters
 
 The files in question have to be located in a folder named `item_lists` which in turn has to be inside a folder named `storagetech_aid.data`. This folder needs to be in the same directory the app `storagetech_aid.sc` is. The files can be in either `JSON` or plain `text` format. For `JSON` files the format is as follows:
 ```json
