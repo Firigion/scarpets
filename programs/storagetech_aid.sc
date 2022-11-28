@@ -237,9 +237,10 @@ fill_hopper_box_sorter(item, position) -> ( // for box sorters that use backed u
 
 fill_hopper_overstacked(item, position) -> ( // for overstacked sorters
     inventory_set(position, 0, 1, item);
-    inventory_set(position, 1, 2, 'white_shulker_box');
-    loop(2, inventory_set(position, _+2, 1, 'white_shulker_box') );
-    set_hopper_inv(position, 4, 63); // dummy items
+    inventory_set(position, 1, 2, 'white_shulker_box'); // overstacked item
+    loop(2, inventory_set(position, _+2, 1, 'white_shulker_box') ); // filler unstackables
+    dummy_count = if(stack_limit(item)==16, 52, 62);
+    set_hopper_inv(position, 4, dummy_count); // dummy items
 );
 
 set_and_fill_hopper(item, position, orientation, type) -> (
